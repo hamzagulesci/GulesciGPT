@@ -82,13 +82,13 @@ export async function POST(request: NextRequest) {
           })
         })
 
-        // Rate limit kontrolü
+        // Rate limit kontrolü (geçici durum - key'i pasife çekme!)
         if (response.status === 429) {
-          console.log(`API key ${apiKey.id} rate limit'e takıldı, rotate ediliyor...`)
-          await markKeyAsFailed(apiKey.id)
-          apiKey = getActiveKey()
-          retryCount++
-          continue
+          console.log(`API key ${apiKey.id} rate limit'e takıldı - geçici hata`)
+          return NextResponse.json(
+            { error: 'Sistem şu anda yoğun, lütfen birkaç saniye sonra tekrar deneyin.' },
+            { status: 503 }
+          )
         }
 
         if (!response.ok) {

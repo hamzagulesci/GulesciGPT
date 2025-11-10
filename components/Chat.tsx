@@ -164,11 +164,7 @@ export function Chat() {
         let errorMessage = error.error || 'Bir hata oluştu'
 
         if (response.status === 503) {
-          errorMessage = '⚠️ API key bulunamadı veya tüm keyler tükendi!\n\n' +
-                        '1. Admin paneline git: http://localhost:3000/login\n' +
-                        '2. Şifre: admin123\n' +
-                        '3. "API Key Yönetimi" → "Yeni Key Ekle"\n' +
-                        '4. OpenRouter key ekle: https://openrouter.ai/keys'
+          errorMessage = '⚠️ API key bulunamadı veya tükendi. Lütfen sistem yöneticisinin sorunu çözmesini bekleyin (genellikle 1 saat içinde düzeltilir).'
         } else if (response.status === 403) {
           errorMessage = '🔒 CAPTCHA doğrulaması başarısız\n\n' +
                         'Development modunda olmalısınız ama CAPTCHA key\'leri girilmiş.\n' +
