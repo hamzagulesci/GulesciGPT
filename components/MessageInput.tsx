@@ -16,10 +16,15 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const handleSend = () => {
-    if (!message.trim() || !captchaToken || disabled) return
+  // CAPTCHA yoksa (development için) otomatik bypass
+  const hasCaptcha = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
-    onSend(message.trim(), captchaToken)
+  const handleSend = () => {
+    // CAPTCHA yoksa veya token varsa gönder
+    const captchaValid = !hasCaptcha || captchaToken
+    if (!message.trim() || !captchaValid || disabled) return
+
+    onSend(message.trim(), captchaToken || 'dev-bypass')
     setMessage('')
     setCaptchaToken(null) // CAPTCHA'yı sıfırla, kullanıcı yeni CAPTCHA çözmeli
 
@@ -44,17 +49,25 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
     }
   }
 
-  const canSend = message.trim() && captchaToken && !disabled
+  const canSend = message.trim() && (!hasCaptcha || captchaToken) && !disabled
 
   return (
     <div className="border-t bg-white p-4 space-y-3">
-      {/* CAPTCHA Widget */}
-      <div className="flex justify-center">
-        <TurnstileWidget
-          onSuccess={(token) => setCaptchaToken(token)}
-          onError={() => setCaptchaToken(null)}
-        />
-      </div>
+      {/* CAPTCHA Widget - sadece production'da göster */}
+      {hasCaptcha ? (
+        <div className="flex justify-center">
+          <TurnstileWidget
+            onSuccess={(token) => setCaptchaToken(token)}
+            onError={() => setCaptchaToken(null)}
+          />
+        </div>
+      ) : (
+        <div className="flex justify-center">
+          <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded">
+            ⚠️ CAPTCHA devre dışı (Development modu)
+          </p>
+        </div>
+      )}
 
       {/* Mesaj Input */}
       <div className="flex gap-2 items-end">

@@ -287,16 +287,6 @@ export function Chat() {
             onSend={handleSendMessage}
             disabled={isLoading}
           />
-
-          {/* Side Ads (Desktop) */}
-          <div className="hidden xl:block fixed right-4 top-20 w-40">
-            <div
-              id="ad-right"
-              className="w-[160px] h-[600px] bg-gray-100 flex items-center justify-center text-gray-400 text-xs"
-            >
-              Reklam (160x600)
-            </div>
-          </div>
         </main>
       </div>
 

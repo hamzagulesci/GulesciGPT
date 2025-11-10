@@ -106,26 +106,111 @@ Tarayıcıda `http://localhost:3000` adresini açın.
 3. Admin panelinden key'i ekleyin
 4. Key otomatik olarak free modeller için kullanılacak
 
-## 🚢 Deployment
+## 🚢 Deployment & Hosting Önerileri
 
-### Vercel
+### 🌟 Önerilen: Vercel (En İyi Next.js Desteği)
 
-1. GitHub'a push edin
-2. Vercel dashboard'a gidin
-3. "New Project" → GitHub repo seçin
-4. Environment variables ekleyin
-5. Deploy edin
+**Neden Vercel?**
+- Next.js geliştiricileri tarafından yapıldı
+- Sıfır konfigürasyon
+- Otomatik HTTPS ve CDN
+- Ücretsiz plan: 100 GB bandwidth, sınırsız dağıtım
+- Mükemmel performans ve hız
+- Kolay domain bağlama
 
-### Cloudflare Pages
+**Adımlar:**
+1. [Vercel](https://vercel.com) hesabı oluşturun
+2. GitHub repo'yu bağlayın
+3. "New Project" → GulesciGPT seçin
+4. Environment variables ekleyin:
+   ```
+   TURNSTILE_SECRET_KEY=xxx
+   ADMIN_PASSWORD=xxx
+   JWT_SECRET=xxx
+   NEXT_PUBLIC_TURNSTILE_SITE_KEY=xxx
+   NEXT_PUBLIC_SITE_URL=https://gulescigpt.com
+   ```
+5. Deploy! (Otomatik build edilir)
+6. Custom domain ekle: Settings → Domains → gulescigpt.com
 
-1. Cloudflare dashboard → Pages
+### 🔵 Alternatif: Cloudflare Pages (Ücretsiz + Hızlı)
+
+**Neden Cloudflare Pages?**
+- Tamamen ücretsiz (bandwidth limiti yok)
+- Cloudflare CDN entegrasyonu
+- DDoS koruması
+- Hızlı global delivery
+- Turnstile CAPTCHA ile aynı ekosistem
+
+**Adımlar:**
+1. [Cloudflare Pages](https://pages.cloudflare.com) → Create a project
 2. GitHub repo bağlayın
 3. Build settings:
    - Framework: Next.js
    - Build command: `npm run build`
-   - Output: `.next`
-4. Environment variables ekleyin
-5. Deploy edin
+   - Output directory: `.next`
+   - Node version: 18+
+4. Environment variables ekleyin (yukarıdaki gibi)
+5. Deploy et
+6. Custom domain: Custom domains → Add domain
+
+### ⚡ Diğer Alternatifler
+
+**Netlify:**
+- Ücretsiz plan: 100 GB bandwidth
+- Otomatik HTTPS
+- Form handling ve serverless functions
+
+**Railway:**
+- Hobby plan: $5/ay
+- Database hosting dahil
+- Kolay scale
+
+**DigitalOcean App Platform:**
+- $5/ay'dan başlayan planlar
+- Tam kontrol
+- Database ve managed services
+
+### 📝 Production Checklist
+
+Deployment öncesi kontrol edin:
+
+- [ ] `.env.local` dosyasındaki tüm değişkenleri production'a ekledim
+- [ ] Cloudflare Turnstile key'lerini aldım
+- [ ] En az 1 OpenRouter API key ekledim (admin panelinden)
+- [ ] Admin şifresini güçlü bir şifreyle değiştirdim
+- [ ] JWT_SECRET en az 32 karakter
+- [ ] Domain'i custom domain olarak ekledim
+- [ ] SSL/HTTPS aktif
+- [ ] Google AdSense hesabı oluşturdum (opsiyonel)
+
+### 🌐 Domain Bağlama
+
+**gulescigpt.com domain'inizi bağlamak için:**
+
+1. Domain sağlayıcınızdan (GoDaddy, Namecheap, vb.) DNS ayarlarına gidin
+2. A record veya CNAME ekleyin:
+   - Vercel için: CNAME → cname.vercel-dns.com
+   - Cloudflare Pages için: CNAME → [your-project].pages.dev
+3. Hosting platformundan custom domain ekleyin
+4. SSL sertifikası otomatik oluşturulacak (5-10 dakika)
+
+### 🔒 Production Güvenlik
+
+Production'da mutlaka yapın:
+
+1. **Rate Limiting ekleyin** (Opsiyonel ama önerilir):
+   - Vercel Edge Config veya Upstash Redis
+   - IP başına 20 mesaj/saat limiti
+
+2. **Environment variables'ları güvenli tutun**:
+   - Asla GitHub'a commitlemeyin
+   - Production ve development için farklı key'ler kullanın
+
+3. **Monitoring ekleyin**:
+   - Vercel Analytics
+   - Sentry (error tracking)
+   - Log yönetimi
 
 ## 📁 Proje Yapısı
 

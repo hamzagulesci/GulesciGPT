@@ -13,33 +13,37 @@ export async function POST(request: NextRequest) {
   try {
     const { messages, model, captchaToken } = await request.json()
 
-    // CAPTCHA doğrulaması
-    if (!captchaToken) {
-      return NextResponse.json(
-        { error: 'CAPTCHA token bulunamadı' },
-        { status: 400 }
-      )
-    }
+    // CAPTCHA doğrulaması (development modunda bypass)
+    const isDevelopment = !process.env.TURNSTILE_SECRET_KEY || captchaToken === 'dev-bypass'
 
-    const verifyResponse = await fetch(
-      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          secret: process.env.TURNSTILE_SECRET_KEY,
-          response: captchaToken,
-        }),
+    if (!isDevelopment) {
+      if (!captchaToken) {
+        return NextResponse.json(
+          { error: 'CAPTCHA token bulunamadı' },
+          { status: 400 }
+        )
       }
-    )
 
-    const verifyData = await verifyResponse.json()
-
-    if (!verifyData.success) {
-      return NextResponse.json(
-        { error: 'CAPTCHA doğrulaması başarısız' },
-        { status: 403 }
+      const verifyResponse = await fetch(
+        'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            secret: process.env.TURNSTILE_SECRET_KEY,
+            response: captchaToken,
+          }),
+        }
       )
+
+      const verifyData = await verifyResponse.json()
+
+      if (!verifyData.success) {
+        return NextResponse.json(
+          { error: 'CAPTCHA doğrulaması başarısız' },
+          { status: 403 }
+        )
+      }
     }
 
     // Aktif API key al
