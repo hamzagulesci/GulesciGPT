@@ -158,8 +158,24 @@ export function Chat() {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Bir hata oluştu')
+        const error = await response.json().catch(() => ({ error: 'Sunucu hatası' }))
+
+        // Hata mesajını daha açıklayıcı yap
+        let errorMessage = error.error || 'Bir hata oluştu'
+
+        if (response.status === 503) {
+          errorMessage = '⚠️ API key bulunamadı veya tüm keyler tükendi!\n\n' +
+                        '1. Admin paneline git: http://localhost:3000/login\n' +
+                        '2. Şifre: admin123\n' +
+                        '3. "API Key Yönetimi" → "Yeni Key Ekle"\n' +
+                        '4. OpenRouter key ekle: https://openrouter.ai/keys'
+        } else if (response.status === 403) {
+          errorMessage = '🔒 CAPTCHA doğrulaması başarısız\n\n' +
+                        'Development modunda olmalısınız ama CAPTCHA key\'leri girilmiş.\n' +
+                        '.env.local dosyasındaki CAPTCHA satırlarını boşaltın.'
+        }
+
+        throw new Error(errorMessage)
       }
 
       // SSE stream'ini oku
@@ -235,7 +251,15 @@ export function Chat() {
 
     } catch (error: any) {
       console.error('Chat hatası:', error)
-      toast.error(error.message || 'Mesaj gönderilemedi')
+
+      // Daha uzun toast için duration artır
+      toast.error(error.message || 'Mesaj gönderilemedi', {
+        duration: 10000, // 10 saniye
+        style: {
+          whiteSpace: 'pre-line', // Satır atlamalarını göster
+        }
+      })
+
       // Kullanıcı mesajını geri al
       setMessages(messages)
     } finally {

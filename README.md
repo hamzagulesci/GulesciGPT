@@ -1,11 +1,38 @@
 # GüleşciGPT - Okul AI Chat Platformu
 
-Okul çapında kullanılacak ücretsiz AI chat uygulaması. OpenRouter üzerinden 53 farklı ücretsiz AI modeline erişim sağlar.
+Okul çapında kullanılacak ücretsiz AI chat uygulaması. OpenRouter üzerinden 47 farklı ücretsiz AI modeline erişim sağlar.
+
+---
+
+## ⚡ HIZLI BAŞLANGIÇ (5 Dakika)
+
+Test etmek için hemen başla:
+
+```bash
+# 1. Klonla
+git clone https://github.com/hamzagulesci/GulesciGPT.git
+cd GulesciGPT
+
+# 2. Yükle
+npm install
+
+# 3. Çalıştır (.env.local zaten hazır!)
+npm run dev
+```
+
+**Şimdi:**
+1. 🌐 http://localhost:3000/login aç → Şifre: `admin123`
+2. 🔑 OpenRouter API key ekle: https://openrouter.ai/keys
+3. 💬 http://localhost:3000 → Mesaj gönder!
+
+**📖 Detaylı kurulum:** [SETUP.md](./SETUP.md) dosyasına bak
+
+---
 
 ## 🚀 Özellikler
 
 ### 🤖 AI Chat
-- **53 Farklı Free Model**: DeepSeek R1, Llama, Mistral, Gemini ve daha fazlası
+- **47 Farklı Free Model**: DeepSeek R1, Llama 4, Mistral, Gemini 2.0 ve daha fazlası
 - **DeepSeek R1 Özel Özelliği**: Düşünce süreci (reasoning) gösterimi
 - **Real-time Streaming**: Cevaplar anında akışla gelir
 - **Chat Geçmişi**: Son 50 sohbet localStorage'da saklanır
