@@ -13,8 +13,12 @@ export async function POST(request: NextRequest) {
   try {
     const { messages, model, captchaToken } = await request.json()
 
+    console.log('🔵 Chat request received:', { model, messageCount: messages.length })
+
     // CAPTCHA doğrulaması (development modunda bypass)
     const isDevelopment = !process.env.TURNSTILE_SECRET_KEY || captchaToken === 'dev-bypass'
+
+    console.log('🔵 CAPTCHA check:', { isDevelopment, hasCaptchaToken: !!captchaToken })
 
     if (!isDevelopment) {
       if (!captchaToken) {
@@ -48,6 +52,8 @@ export async function POST(request: NextRequest) {
 
     // Aktif API key al
     let apiKey = getActiveKey()
+    console.log('🔵 API Key check:', { hasKey: !!apiKey, keyId: apiKey?.id })
+
     let retryCount = 0
     const maxRetries = 3
 
@@ -198,10 +204,13 @@ export async function POST(request: NextRequest) {
       { status: 503 }
     )
 
-  } catch (error) {
-    console.error('Chat API hatası:', error)
+  } catch (error: any) {
+    console.error('❌ Chat API FATAL ERROR:', error)
+    console.error('❌ Error stack:', error.stack)
+    console.error('❌ Error message:', error.message)
+
     return NextResponse.json(
-      { error: 'Sunucu hatası' },
+      { error: `Sunucu hatası: ${error.message}` },
       { status: 500 }
     )
   }
