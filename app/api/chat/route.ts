@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
             'Authorization': `Bearer ${apiKey.key}`,
             'Content-Type': 'application/json',
             'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://gulescigpt.com',
-            'X-Title': 'GüleşciGPT'
+            'X-Title': 'GulesciGPT'
           },
           body: JSON.stringify({
             model,
