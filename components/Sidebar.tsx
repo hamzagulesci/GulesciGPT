@@ -30,14 +30,27 @@ export function Sidebar({
   const [isOpen, setIsOpen] = useState(false)
 
   const sidebarContent = (
-    <div className="h-full flex flex-col bg-gray-900 text-white">
+    <div
+      className="h-full flex flex-col"
+      style={{
+        background: 'var(--bg-tertiary)',
+        color: 'var(--text-secondary)',
+        boxShadow: '0px 2px 6px var(--shadow)'
+      }}
+    >
       {/* Header */}
-      <div className="p-4 border-b border-gray-700">
+      <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">GüleşciGPT</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            GüleşciGPT
+          </h1>
           <button
             onClick={() => setIsOpen(false)}
-            className="lg:hidden text-gray-400 hover:text-white"
+            className="lg:hidden transition-colors"
+            style={{ color: 'var(--text-tertiary)' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-action-hover)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-tertiary)'}
+            aria-label="Menüyü kapat"
           >
             <X className="h-6 w-6" />
           </button>
@@ -48,7 +61,12 @@ export function Sidebar({
             onNewChat()
             setIsOpen(false)
           }}
-          className="w-full bg-green-600 hover:bg-green-700"
+          className="w-full"
+          style={{
+            background: 'var(--color-action)',
+            color: 'var(--text-primary)'
+          }}
+          aria-label="Yeni sohbet başlat"
         >
           <Plus className="mr-2 h-4 w-4" />
           Yeni Sohbet
@@ -56,12 +74,18 @@ export function Sidebar({
       </div>
 
       {/* Model Selector */}
-      <div className="p-4 border-b border-gray-700">
-        <label className="text-sm text-gray-400 mb-2 block">Model Seçin</label>
+      <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
+        <label
+          className="text-sm mb-2 block"
+          style={{ color: 'var(--text-tertiary)' }}
+          htmlFor="model-selector"
+        >
+          Model Seçin
+        </label>
         <ModelSelector
           selectedModel={selectedModel}
           onModelChange={onModelChange}
-          className="w-full bg-gray-800 border-gray-700 text-white"
+          className="w-full"
         />
       </div>
 
@@ -69,28 +93,42 @@ export function Sidebar({
       <div className="flex-1 overflow-y-auto p-2">
         <div className="space-y-1">
           {chats.length === 0 ? (
-            <p className="text-gray-500 text-sm text-center py-4">
+            <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>
               Henüz sohbet yok
             </p>
           ) : (
             chats.map((chat) => (
               <div
                 key={chat.chatId}
-                className={cn(
-                  "group relative rounded-lg p-3 cursor-pointer transition-colors",
-                  currentChatId === chat.chatId
-                    ? "bg-gray-700"
-                    : "hover:bg-gray-800"
-                )}
+                className="group relative rounded-lg p-3 cursor-pointer transition-colors"
+                style={{
+                  background: currentChatId === chat.chatId ? 'rgba(30, 144, 255, 0.15)' : 'transparent',
+                  borderLeft: currentChatId === chat.chatId ? '3px solid var(--color-action)' : '3px solid transparent'
+                }}
+                onMouseEnter={(e) => {
+                  if (currentChatId !== chat.chatId) {
+                    e.currentTarget.style.background = 'rgba(30, 144, 255, 0.08)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (currentChatId !== chat.chatId) {
+                    e.currentTarget.style.background = 'transparent'
+                  }
+                }}
                 onClick={() => {
                   onSelectChat(chat.chatId)
                   setIsOpen(false)
                 }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Sohbet: ${chat.title}`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{chat.title}</p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text-secondary)' }}>
+                      {chat.title}
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                       {formatDate(chat.updatedAt)}
                     </p>
                   </div>
@@ -100,7 +138,9 @@ export function Sidebar({
                       e.stopPropagation()
                       onDeleteChat(chat.chatId)
                     }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-600 rounded"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded"
+                    style={{ background: 'var(--color-alert)' }}
+                    aria-label={`${chat.title} sohbetini sil`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -112,10 +152,15 @@ export function Sidebar({
       </div>
 
       {/* Ad Space - Sidebar Bottom */}
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-4" style={{ borderTop: '1px solid var(--border-color)' }}>
         <div
           id="ad-sidebar"
-          className="w-full h-[250px] bg-gray-800 flex items-center justify-center text-gray-500 text-sm"
+          className="w-full h-[250px] flex items-center justify-center text-sm rounded"
+          style={{
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-muted)',
+            border: '1px solid var(--border-color)'
+          }}
         >
           Reklam Alanı (300x250)
         </div>
@@ -128,7 +173,13 @@ export function Sidebar({
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 p-2 bg-gray-900 text-white rounded-lg"
+        className="lg:hidden fixed top-4 left-4 z-40 p-2 rounded-lg"
+        style={{
+          background: 'var(--bg-navbar)',
+          color: 'var(--text-primary)',
+          boxShadow: '0px 2px 6px var(--shadow)'
+        }}
+        aria-label="Menüyü aç"
       >
         <Menu className="h-6 w-6" />
       </button>
@@ -136,8 +187,10 @@ export function Sidebar({
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="lg:hidden fixed inset-0 z-40"
+          style={{ background: 'rgba(0, 0, 0, 0.8)' }}
           onClick={() => setIsOpen(false)}
+          aria-label="Menüyü kapat"
         />
       )}
 

@@ -85,27 +85,64 @@ export function AdminDashboard() {
 
   if (isLoading || !statsData) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div
+        className="flex items-center justify-center h-screen"
+        style={{ background: 'var(--bg-primary)' }}
+      >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Yükleniyor...</p>
+          <div
+            className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+            style={{ borderColor: 'var(--color-action)' }}
+          />
+          <p style={{ color: 'var(--text-tertiary)' }}>Yükleniyor...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div
+      className="container mx-auto p-6 min-h-screen"
+      style={{ background: 'var(--bg-primary)' }}
+    >
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">GüleşciGPT Admin Paneli</h1>
-        <p className="text-gray-600 mt-1">Sistem yönetimi ve istatistikler</p>
+        <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+          GüleşciGPT Admin Paneli
+        </h1>
+        <p className="mt-1" style={{ color: 'var(--text-tertiary)' }}>
+          Sistem yönetimi ve istatistikler
+        </p>
       </div>
 
       <Tabs defaultValue="keys" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-md">
-          <TabsTrigger value="keys">API Keyler</TabsTrigger>
-          <TabsTrigger value="stats">İstatistikler</TabsTrigger>
-          <TabsTrigger value="system">Sistem</TabsTrigger>
+        <TabsList
+          className="grid w-full grid-cols-3 max-w-md"
+          style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)'
+          }}
+        >
+          <TabsTrigger
+            value="keys"
+            style={{ color: 'var(--text-secondary)' }}
+            aria-label="API Key yönetimi"
+          >
+            API Keyler
+          </TabsTrigger>
+          <TabsTrigger
+            value="stats"
+            style={{ color: 'var(--text-secondary)' }}
+            aria-label="İstatistikler"
+          >
+            İstatistikler
+          </TabsTrigger>
+          <TabsTrigger
+            value="system"
+            style={{ color: 'var(--text-secondary)' }}
+            aria-label="Sistem durumu"
+          >
+            Sistem
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="keys" className="mt-6">

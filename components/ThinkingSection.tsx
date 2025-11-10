@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, Brain } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 interface ThinkingSectionProps {
   thinking: string
@@ -14,31 +12,20 @@ export function ThinkingSection({ thinking }: ThinkingSectionProps) {
   if (!thinking) return null
 
   return (
-    <div className="mb-2 rounded-lg border border-gray-200 bg-gray-50">
+    <div className="thinking-section">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+        className="thinking-toggle"
+        aria-label={isOpen ? "Düşünce sürecini gizle" : "Düşünce sürecini göster"}
+        aria-expanded={isOpen}
       >
-        <div className="flex items-center gap-2">
-          <Brain className="h-4 w-4" />
-          <span>Düşünce Süreci</span>
-        </div>
-        {isOpen ? (
-          <ChevronUp className="h-4 w-4" />
-        ) : (
-          <ChevronDown className="h-4 w-4" />
-        )}
+        <span className="text-lg" role="img" aria-label="Beyin">🧠</span>
+        <span>Düşünce Süreci</span>
+        <span className={`thinking-arrow ${isOpen ? 'expanded' : ''}`}>▼</span>
       </button>
 
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-200",
-          isOpen ? "max-h-96" : "max-h-0"
-        )}
-      >
-        <div className="px-4 py-3 text-xs font-mono text-gray-600 whitespace-pre-wrap overflow-y-auto max-h-80 border-t border-gray-200">
-          {thinking}
-        </div>
+      <div className={`thinking-content ${isOpen ? '' : 'collapsed'}`}>
+        <pre className="thinking-text">{thinking}</pre>
       </div>
     </div>
   )

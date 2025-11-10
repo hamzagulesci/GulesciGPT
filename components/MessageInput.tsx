@@ -52,7 +52,13 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
   const canSend = message.trim() && (!hasCaptcha || captchaToken) && !disabled
 
   return (
-    <div className="border-t bg-white p-4 space-y-3">
+    <div
+      className="p-4 space-y-3"
+      style={{
+        background: 'var(--bg-secondary)',
+        borderTop: '1px solid var(--border-color)'
+      }}
+    >
       {/* CAPTCHA Widget - sadece production'da göster */}
       {hasCaptcha ? (
         <div className="flex justify-center">
@@ -63,7 +69,14 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
         </div>
       ) : (
         <div className="flex justify-center">
-          <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded">
+          <p
+            className="text-xs px-3 py-2 rounded"
+            style={{
+              background: 'rgba(255, 193, 7, 0.1)',
+              color: '#FFC107',
+              border: '1px solid rgba(255, 193, 7, 0.3)'
+            }}
+          >
             ⚠️ CAPTCHA devre dışı (Development modu)
           </p>
         </div>
@@ -82,19 +95,33 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           placeholder="Mesajınızı yazın..."
           disabled={disabled}
           className="min-h-[60px] max-h-[120px] resize-none"
+          style={{
+            background: 'var(--bg-primary)',
+            color: 'var(--text-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '6px',
+            padding: '12px'
+          }}
           rows={2}
+          aria-label="Mesaj yazma alanı"
         />
         <Button
           onClick={handleSend}
           disabled={!canSend}
           size="icon"
           className="h-[60px] w-[60px] flex-shrink-0"
+          style={{
+            background: canSend ? 'var(--color-action)' : 'var(--border-color)',
+            color: 'var(--text-primary)',
+            borderRadius: '6px'
+          }}
+          aria-label="Mesaj gönder"
         >
           <Send className="h-5 w-5" />
         </Button>
       </div>
 
-      <p className="text-xs text-gray-500 text-center">
+      <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
         Enter: Gönder | Shift+Enter: Yeni satır
       </p>
     </div>

@@ -277,13 +277,20 @@ export function Chat() {
         />
 
         <main className="flex-1 flex flex-col">
-          {/* Top Bar */}
-          <div className="border-b bg-white p-4 flex items-center justify-between">
+          {/* Top Bar - Navbar */}
+          <div
+            className="p-4 flex items-center justify-between shadow-sm"
+            style={{
+              background: 'var(--bg-navbar)',
+              borderBottom: '1px solid var(--border-color)',
+              boxShadow: '0px 2px 4px var(--shadow)'
+            }}
+          >
             <div>
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {currentChat?.title || 'Yeni Sohbet'}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
                 Model: {selectedModel.split('/').pop()?.split(':')[0]}
               </p>
             </div>
