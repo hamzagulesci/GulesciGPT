@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
+import { Menu } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
@@ -40,6 +41,7 @@ export function Chat() {
   const [selectedModel, setSelectedModelState] = useState(DEFAULT_MODEL)
   const [showModelChangeDialog, setShowModelChangeDialog] = useState(false)
   const [pendingModel, setPendingModel] = useState<string | null>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
 
   // Load chats ve selected model on mount
@@ -76,6 +78,9 @@ export function Chat() {
         ...m,
         thinking: (m as any).thinking
       })))
+      // Sohbetin modelini de UI'da göster
+      setSelectedModelState(chat.model)
+      setSelectedModel(chat.model)
     }
   }, [])
 
@@ -295,18 +300,35 @@ export function Chat() {
           onSelectChat={handleSelectChat}
           onDeleteChat={handleDeleteChat}
           onModelChange={handleModelChange}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 
         <main className="flex-1 flex flex-col">
           {/* Top Bar - Navbar */}
           <div
-            className="p-3 md:p-4 flex items-center justify-between shadow-sm"
+            className="p-3 md:p-4 flex items-center gap-3 shadow-sm"
             style={{
               background: 'var(--bg-navbar)',
               borderBottom: '1px solid var(--border-color)',
               boxShadow: '0px 2px 4px var(--shadow)'
             }}
           >
+            {/* Hamburger Menu (Mobile) */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg flex-shrink-0 transition-colors"
+              style={{
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-action)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+              aria-label="Menüyü aç"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+
             <div className="flex-1 min-w-0 pr-2">
               <h2 className="text-base md:text-lg font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
                 {currentChat?.title || 'Yeni Sohbet'}

@@ -16,6 +16,8 @@ interface SidebarProps {
   onSelectChat: (chatId: string) => void
   onDeleteChat: (chatId: string) => void
   onModelChange: (modelId: string) => void
+  isOpen?: boolean
+  onToggle?: () => void
 }
 
 export function Sidebar({
@@ -26,8 +28,19 @@ export function Sidebar({
   onSelectChat,
   onDeleteChat,
   onModelChange,
+  isOpen: externalIsOpen,
+  onToggle,
 }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+
+  const toggleSidebar = () => {
+    if (onToggle) {
+      onToggle()
+    } else {
+      setInternalIsOpen(!isOpen)
+    }
+  }
 
   const sidebarContent = (
     <div
@@ -45,7 +58,7 @@ export function Sidebar({
             GüleşciGPT
           </h1>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={toggleSidebar}
             className="lg:hidden transition-colors"
             style={{ color: 'var(--text-tertiary)' }}
             onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-action-hover)'}
@@ -59,7 +72,7 @@ export function Sidebar({
         <Button
           onClick={() => {
             onNewChat()
-            setIsOpen(false)
+            if (window.innerWidth < 1024) toggleSidebar()
           }}
           className="w-full"
           style={{
@@ -117,7 +130,7 @@ export function Sidebar({
                 }}
                 onClick={() => {
                   onSelectChat(chat.chatId)
-                  setIsOpen(false)
+                  if (window.innerWidth < 1024) toggleSidebar()
                 }}
                 role="button"
                 tabIndex={0}
@@ -160,26 +173,12 @@ export function Sidebar({
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 p-2 rounded-lg"
-        style={{
-          background: 'var(--bg-navbar)',
-          color: 'var(--text-primary)',
-          boxShadow: '0px 2px 6px var(--shadow)'
-        }}
-        aria-label="Menüyü aç"
-      >
-        <Menu className="h-6 w-6" />
-      </button>
-
       {/* Mobile Overlay */}
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 z-40"
           style={{ background: 'rgba(0, 0, 0, 0.8)' }}
-          onClick={() => setIsOpen(false)}
+          onClick={toggleSidebar}
           aria-label="Menüyü kapat"
         />
       )}

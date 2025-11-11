@@ -7,7 +7,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'GüleşciGPT - Okul AI Chat Platformu',
+  title: 'GulesciGPT - Claude',
   description: 'Okul çapında kullanılacak ücretsiz AI chat uygulaması',
   keywords: 'AI, chat, öğrenci, okul, yapay zeka, GPT',
 }
