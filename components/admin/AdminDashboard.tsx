@@ -103,21 +103,21 @@ export function AdminDashboard() {
 
   return (
     <div
-      className="container mx-auto p-6 min-h-screen"
+      className="container mx-auto p-3 md:p-6 min-h-screen"
       style={{ background: 'var(--bg-primary)' }}
     >
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
-          GüleşciGPT Admin Paneli
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+          GüleşciGPT Admin
         </h1>
-        <p className="mt-1" style={{ color: 'var(--text-tertiary)' }}>
-          Sistem yönetimi ve istatistikler
+        <p className="mt-1 text-sm md:text-base" style={{ color: 'var(--text-tertiary)' }}>
+          Sistem yönetimi
         </p>
       </div>
 
       <Tabs defaultValue="keys" className="w-full">
         <TabsList
-          className="grid w-full grid-cols-4 max-w-2xl"
+          className="grid w-full grid-cols-2 md:grid-cols-4 max-w-2xl gap-1"
           style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)'
@@ -125,20 +125,23 @@ export function AdminDashboard() {
         >
           <TabsTrigger
             value="keys"
+            className="text-xs md:text-sm px-2 md:px-4"
             style={{ color: 'var(--text-secondary)' }}
             aria-label="API Key yönetimi"
           >
-            API Keyler
+            Keys
           </TabsTrigger>
           <TabsTrigger
             value="stats"
+            className="text-xs md:text-sm px-2 md:px-4"
             style={{ color: 'var(--text-secondary)' }}
             aria-label="İstatistikler"
           >
-            İstatistikler
+            Stats
           </TabsTrigger>
           <TabsTrigger
             value="system"
+            className="text-xs md:text-sm px-2 md:px-4"
             style={{ color: 'var(--text-secondary)' }}
             aria-label="Sistem durumu"
           >
@@ -146,6 +149,7 @@ export function AdminDashboard() {
           </TabsTrigger>
           <TabsTrigger
             value="settings"
+            className="text-xs md:text-sm px-2 md:px-4"
             style={{ color: 'var(--text-secondary)' }}
             aria-label="Ayarlar"
           >
@@ -153,15 +157,15 @@ export function AdminDashboard() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="keys" className="mt-6">
+        <TabsContent value="keys" className="mt-3 md:mt-6">
           <KeyManagementTab keys={keys} onRefresh={refreshData} />
         </TabsContent>
 
-        <TabsContent value="stats" className="mt-6">
+        <TabsContent value="stats" className="mt-3 md:mt-6">
           <StatsTab data={statsData} />
         </TabsContent>
 
-        <TabsContent value="system" className="mt-6">
+        <TabsContent value="system" className="mt-3 md:mt-6">
           <SystemStatusTab
             stats={statsData.stats}
             keyStats={statsData.keyStats}
@@ -169,7 +173,7 @@ export function AdminDashboard() {
           />
         </TabsContent>
 
-        <TabsContent value="settings" className="mt-6">
+        <TabsContent value="settings" className="mt-3 md:mt-6">
           <SettingsTab />
         </TabsContent>
       </Tabs>
