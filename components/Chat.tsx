@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Sidebar } from './Sidebar'
 import { MessageList } from './MessageList'
@@ -59,15 +59,15 @@ export function Chat() {
     }
   }, [])
 
-  const handleNewChat = () => {
+  const handleNewChat = useCallback(() => {
     const newChat = createNewChat(selectedModel)
     setCurrentChat(newChat)
     setMessages([])
     saveChat(newChat)
     setChats(getAllChats())
-  }
+  }, [selectedModel])
 
-  const handleSelectChat = (chatId: string) => {
+  const handleSelectChat = useCallback((chatId: string) => {
     const chat = getAllChats().find(c => c.chatId === chatId)
     if (chat) {
       setCurrentChat(chat)
@@ -76,9 +76,9 @@ export function Chat() {
         thinking: (m as any).thinking
       })))
     }
-  }
+  }, [])
 
-  const handleDeleteChat = (chatId: string) => {
+  const handleDeleteChat = useCallback((chatId: string) => {
     deleteLocalChat(chatId)
     setChats(getAllChats())
 
@@ -92,9 +92,9 @@ export function Chat() {
     }
 
     toast.success('Sohbet silindi')
-  }
+  }, [currentChat?.chatId, handleNewChat, handleSelectChat])
 
-  const handleModelChange = (newModel: string) => {
+  const handleModelChange = useCallback((newModel: string) => {
     if (newModel === selectedModel) return
 
     // Eğer chat'te mesaj varsa, modal göster
@@ -112,9 +112,9 @@ export function Chat() {
         saveChat(updated)
       }
     }
-  }
+  }, [selectedModel, messages.length, currentChat])
 
-  const confirmModelChange = () => {
+  const confirmModelChange = useCallback(() => {
     if (!pendingModel) return
 
     setSelectedModelState(pendingModel)
@@ -130,12 +130,12 @@ export function Chat() {
     setShowModelChangeDialog(false)
     setPendingModel(null)
     toast.success('Yeni sohbet başlatıldı')
-  }
+  }, [pendingModel])
 
-  const cancelModelChange = () => {
+  const cancelModelChange = useCallback(() => {
     setShowModelChangeDialog(false)
     setPendingModel(null)
-  }
+  }, [])
 
   const handleSendMessage = async (content: string, captchaToken: string) => {
     if (!currentChat) return
@@ -279,18 +279,18 @@ export function Chat() {
         <main className="flex-1 flex flex-col">
           {/* Top Bar - Navbar */}
           <div
-            className="p-4 flex items-center justify-between shadow-sm"
+            className="p-3 md:p-4 flex items-center justify-between shadow-sm"
             style={{
               background: 'var(--bg-navbar)',
               borderBottom: '1px solid var(--border-color)',
               boxShadow: '0px 2px 4px var(--shadow)'
             }}
           >
-            <div>
-              <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+            <div className="flex-1 min-w-0 pr-2">
+              <h2 className="text-base md:text-lg font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
                 {currentChat?.title || 'Yeni Sohbet'}
               </h2>
-              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-xs md:text-sm truncate" style={{ color: 'var(--text-tertiary)' }}>
                 Model: {selectedModel.split('/').pop()?.split(':')[0]}
               </p>
             </div>
@@ -298,7 +298,7 @@ export function Chat() {
             <ModelSelector
               selectedModel={selectedModel}
               onModelChange={handleModelChange}
-              className="w-64"
+              className="w-32 md:w-48 lg:w-64 flex-shrink-0"
             />
           </div>
 

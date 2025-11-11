@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, memo } from 'react'
 import { ChatMessage } from '@/lib/openrouter'
 import { ThinkingSection } from './ThinkingSection'
 import { cn } from '@/lib/utils'
@@ -16,7 +16,7 @@ interface MessageListProps {
   modelId: string
 }
 
-export function MessageList({ messages, isLoading, modelId }: MessageListProps) {
+export const MessageList = memo(function MessageList({ messages, isLoading, modelId }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -39,7 +39,7 @@ export function MessageList({ messages, isLoading, modelId }: MessageListProps) 
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto p-4 space-y-4"
+      className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4"
       style={{ background: 'var(--bg-primary)' }}
     >
       {messages.map((message, index) => {
@@ -57,7 +57,7 @@ export function MessageList({ messages, isLoading, modelId }: MessageListProps) 
           >
             <div
               className={cn(
-                "max-w-[80%] rounded-lg px-4 py-3",
+                "max-w-[95%] md:max-w-[85%] lg:max-w-[80%] rounded-lg px-3 md:px-4 py-2 md:py-3",
                 isUser ? "ml-auto" : ""
               )}
               style={isUser
@@ -117,4 +117,4 @@ export function MessageList({ messages, isLoading, modelId }: MessageListProps) 
       <div ref={messagesEndRef} />
     </div>
   )
-}
+})

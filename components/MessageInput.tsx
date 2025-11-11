@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, KeyboardEvent } from 'react'
+import { useState, useRef, KeyboardEvent, memo } from 'react'
 import { Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -11,7 +11,7 @@ interface MessageInputProps {
   disabled?: boolean
 }
 
-export function MessageInput({ onSend, disabled }: MessageInputProps) {
+export const MessageInput = memo(function MessageInput({ onSend, disabled }: MessageInputProps) {
   const [message, setMessage] = useState('')
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -53,7 +53,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
 
   return (
     <div
-      className="p-4 space-y-3"
+      className="p-3 md:p-4 space-y-2 md:space-y-3"
       style={{
         background: 'var(--bg-secondary)',
         borderTop: '1px solid var(--border-color)'
@@ -70,7 +70,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
       ) : (
         <div className="flex justify-center">
           <p
-            className="text-xs px-3 py-2 rounded"
+            className="text-xs px-2 md:px-3 py-1.5 md:py-2 rounded"
             style={{
               background: 'rgba(255, 193, 7, 0.1)',
               color: '#FFC107',
@@ -94,13 +94,14 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           onKeyDown={handleKeyDown}
           placeholder="Mesajınızı yazın..."
           disabled={disabled}
-          className="min-h-[60px] max-h-[120px] resize-none"
+          className="min-h-[50px] md:min-h-[60px] max-h-[120px] resize-none text-base"
           style={{
             background: 'var(--bg-primary)',
             color: 'var(--text-secondary)',
             border: '1px solid var(--border-color)',
             borderRadius: '6px',
-            padding: '12px'
+            padding: '10px md:12px',
+            fontSize: '16px'
           }}
           rows={2}
           aria-label="Mesaj yazma alanı"
@@ -109,7 +110,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           onClick={handleSend}
           disabled={!canSend}
           size="icon"
-          className="h-[60px] w-[60px] flex-shrink-0"
+          className="h-[50px] w-[50px] md:h-[60px] md:w-[60px] flex-shrink-0"
           style={{
             background: canSend ? 'var(--color-action)' : 'var(--border-color)',
             color: 'var(--text-primary)',
@@ -117,13 +118,13 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
           }}
           aria-label="Mesaj gönder"
         >
-          <Send className="h-5 w-5" />
+          <Send className="h-4 w-4 md:h-5 md:w-5" />
         </Button>
       </div>
 
-      <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
+      <p className="text-xs text-center hidden md:block" style={{ color: 'var(--text-muted)' }}>
         Enter: Gönder | Shift+Enter: Yeni satır
       </p>
     </div>
   )
-}
+})

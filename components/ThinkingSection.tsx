@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo } from 'react'
 
 interface ThinkingSectionProps {
   thinking: string
 }
 
-export function ThinkingSection({ thinking }: ThinkingSectionProps) {
+export const ThinkingSection = memo(function ThinkingSection({ thinking }: ThinkingSectionProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   if (!thinking) return null
@@ -29,4 +29,4 @@ export function ThinkingSection({ thinking }: ThinkingSectionProps) {
       </div>
     </div>
   )
-}
+})

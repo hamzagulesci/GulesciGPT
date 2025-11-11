@@ -177,7 +177,75 @@ select:focus-visible {
   h1 {
     font-size: 28px;
   }
+  h2 {
+    font-size: 24px;
+  }
+  h3 {
+    font-size: 20px;
+  }
   body {
     font-size: 14px;
   }
+
+  /* Mobile chat messages */
+  .prose {
+    font-size: 14px;
+  }
+
+  /* Mobile inputs */
+  input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+  /* Tablet adjustments */
+  h1 {
+    font-size: 30px;
+  }
+  body {
+    font-size: 15px;
+  }
+}
+
+/* Mobile-specific utilities */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .mobile-full-width {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .mobile-p-4 {
+    padding: 16px !important;
+  }
+
+  /* Scrollbar thinner on mobile */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+}
+
+/* Performance optimizations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* GPU acceleration for smooth animations */
+.thinking-toggle,
+.thinking-content,
+.thinking-arrow {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }

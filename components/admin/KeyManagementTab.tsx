@@ -124,62 +124,78 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">API Key Yönetimi</h3>
-        <Button onClick={() => setShowAddDialog(true)}>
+        <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+          API Key Yönetimi
+        </h3>
+        <Button
+          onClick={() => setShowAddDialog(true)}
+          style={{
+            background: 'var(--color-action)',
+            color: 'var(--text-primary)'
+          }}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Yeni Key Ekle
         </Button>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ID</TableHead>
-            <TableHead>API Key</TableHead>
-            <TableHead>Durum</TableHead>
-            <TableHead>Kullanım</TableHead>
-            <TableHead>Eklenme</TableHead>
-            <TableHead>Son Kullanım</TableHead>
-            <TableHead>Aksiyonlar</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {keys.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} className="text-center text-gray-500">
-                Henüz API key eklenmemiş
-              </TableCell>
+      <div
+        className="rounded-lg overflow-hidden"
+        style={{
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)'
+        }}
+      >
+        <Table>
+          <TableHeader>
+            <TableRow style={{ borderBottom: '1px solid var(--border-color)' }}>
+              <TableHead style={{ color: 'var(--text-primary)', background: 'var(--bg-tertiary)' }}>ID</TableHead>
+              <TableHead style={{ color: 'var(--text-primary)', background: 'var(--bg-tertiary)' }}>API Key</TableHead>
+              <TableHead style={{ color: 'var(--text-primary)', background: 'var(--bg-tertiary)' }}>Durum</TableHead>
+              <TableHead style={{ color: 'var(--text-primary)', background: 'var(--bg-tertiary)' }}>Kullanım</TableHead>
+              <TableHead style={{ color: 'var(--text-primary)', background: 'var(--bg-tertiary)' }}>Eklenme</TableHead>
+              <TableHead style={{ color: 'var(--text-primary)', background: 'var(--bg-tertiary)' }}>Son Kullanım</TableHead>
+              <TableHead style={{ color: 'var(--text-primary)', background: 'var(--bg-tertiary)' }}>Aksiyonlar</TableHead>
             </TableRow>
-          ) : (
-            keys.map((key) => (
-              <TableRow key={key.id}>
-                <TableCell className="font-mono text-sm">
-                  {key.id.substring(0, 8)}...
+          </TableHeader>
+          <TableBody>
+            {keys.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center" style={{ color: 'var(--text-muted)' }}>
+                  Henüz API key eklenmemiş
                 </TableCell>
-                <TableCell className="font-mono text-sm">{key.key}</TableCell>
+              </TableRow>
+            ) : (
+              keys.map((key) => (
+                <TableRow key={key.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <TableCell className="font-mono text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    {key.id.substring(0, 8)}...
+                  </TableCell>
+                  <TableCell className="font-mono text-sm" style={{ color: 'var(--text-secondary)' }}>{key.key}</TableCell>
                 <TableCell>
                   <button
                     onClick={() => handleToggleStatus(key.id, key.isActive)}
                     className="flex items-center gap-1"
+                    aria-label={key.isActive ? "Pasife çevir" : "Aktife çevir"}
                   >
                     {key.isActive ? (
                       <>
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="text-green-600 text-sm">Aktif</span>
+                        <CheckCircle className="h-4 w-4" style={{ color: '#4CAF50' }} />
+                        <span className="text-sm" style={{ color: '#4CAF50' }}>Aktif</span>
                       </>
                     ) : (
                       <>
-                        <XCircle className="h-4 w-4 text-red-600" />
-                        <span className="text-red-600 text-sm">Pasif</span>
+                        <XCircle className="h-4 w-4" style={{ color: 'var(--color-alert)' }} />
+                        <span className="text-sm" style={{ color: 'var(--color-alert)' }}>Pasif</span>
                       </>
                     )}
                   </button>
                 </TableCell>
-                <TableCell>{key.usageCount}</TableCell>
-                <TableCell className="text-sm">
+                <TableCell style={{ color: 'var(--text-secondary)' }}>{key.usageCount}</TableCell>
+                <TableCell className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
                   {formatDate(key.addedAt)}
                 </TableCell>
-                <TableCell className="text-sm">
+                <TableCell className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
                   {key.lastUsed ? formatDate(key.lastUsed) : '-'}
                 </TableCell>
                 <TableCell>
@@ -187,6 +203,11 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDeleteKey(key.id)}
+                    style={{
+                      background: 'var(--color-alert)',
+                      color: 'var(--text-primary)'
+                    }}
+                    aria-label="API key'i sil"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -195,20 +216,30 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
             ))
           )}
         </TableBody>
-      </Table>
+        </Table>
+      </div>
 
       {/* Add Key Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
+        <DialogContent
+          style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)'
+          }}
+        >
           <DialogHeader>
-            <DialogTitle>Yeni API Key Ekle</DialogTitle>
-            <DialogDescription>
+            <DialogTitle style={{ color: 'var(--text-primary)' }}>
+              Yeni API Key Ekle
+            </DialogTitle>
+            <DialogDescription style={{ color: 'var(--text-tertiary)' }}>
               OpenRouter API key'inizi girin
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="apiKey">API Key</Label>
+              <Label htmlFor="apiKey" style={{ color: 'var(--text-secondary)' }}>
+                API Key
+              </Label>
               <Input
                 id="apiKey"
                 type="password"
@@ -216,6 +247,13 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
                 onChange={(e) => setNewKey(e.target.value)}
                 placeholder="sk-or-v1-..."
                 disabled={isLoading}
+                style={{
+                  background: 'var(--bg-primary)',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '6px'
+                }}
+                aria-label="OpenRouter API key"
               />
             </div>
           </div>
@@ -224,10 +262,22 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
               variant="outline"
               onClick={() => setShowAddDialog(false)}
               disabled={isLoading}
+              style={{
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-color)'
+              }}
             >
               İptal
             </Button>
-            <Button onClick={handleAddKey} disabled={isLoading}>
+            <Button
+              onClick={handleAddKey}
+              disabled={isLoading}
+              style={{
+                background: isLoading ? 'var(--border-color)' : 'var(--color-action)',
+                color: 'var(--text-primary)'
+              }}
+            >
               {isLoading ? 'Ekleniyor...' : 'Ekle'}
             </Button>
           </DialogFooter>
