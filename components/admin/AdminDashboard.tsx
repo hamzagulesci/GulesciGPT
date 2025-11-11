@@ -120,13 +120,14 @@ export function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="keys" className="w-full">
-        <TabsList
-          className="grid w-full grid-cols-2 md:grid-cols-4 xl:grid-cols-7 max-w-5xl gap-1"
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)'
-          }}
-        >
+        <div className="overflow-x-auto pb-2">
+          <TabsList
+            className="inline-flex w-auto md:grid md:w-full md:grid-cols-4 xl:grid-cols-7 md:max-w-5xl gap-2"
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)'
+            }}
+          >
           <TabsTrigger
             value="keys"
             className="text-xs md:text-sm px-2 md:px-4"
@@ -183,7 +184,8 @@ export function AdminDashboard() {
           >
             Audit
           </TabsTrigger>
-        </TabsList>
+          </TabsList>
+        </div>
 
         <TabsContent value="keys" className="mt-3 md:mt-6">
           <KeyManagementTab keys={keys} onRefresh={refreshData} />

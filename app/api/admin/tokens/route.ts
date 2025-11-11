@@ -1,25 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifyToken } from '@/lib/auth'
 import { getTokenStats } from '@/lib/tokenTracker'
-import { cookies } from 'next/headers'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-// Basit admin kontrolü
-function isAdmin(request: NextRequest): boolean {
-  const cookieStore = cookies()
-  const isAuthenticated = cookieStore.get('admin_authenticated')?.value === 'true'
+// Admin auth kontrolü
+async function checkAuth(request: NextRequest) {
+  const token = request.cookies.get('admin_token')?.value
 
-  if (!isAuthenticated) {
-    return false
+  if (!token) {
+    return null
   }
 
-  return true
+  const payload = await verifyToken(token)
+  return payload
 }
 
 // GET: Token istatistiklerini getir
 export async function GET(request: NextRequest) {
-  if (!isAdmin(request)) {
+  const auth = await checkAuth(request)
+
+  if (!auth) {
     return NextResponse.json(
       { error: 'Yetkisiz erişim' },
       { status: 401 }

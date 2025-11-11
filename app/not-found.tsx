@@ -91,13 +91,6 @@ export default function NotFound() {
             >
               Chat Başlat
             </Link>
-            <Link
-              href="/login"
-              className="hover:underline"
-              style={{ color: 'var(--color-action)' }}
-            >
-              Admin Girişi
-            </Link>
           </div>
         </div>
       </div>

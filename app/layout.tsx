@@ -47,7 +47,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         {children}
-        <Toaster position="top-center" richColors />
+        <Toaster position="top-center" richColors closeButton />
 
         {/* PWA Service Worker */}
         <Script id="register-sw" strategy="afterInteractive">
