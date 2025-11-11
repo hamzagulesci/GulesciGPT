@@ -177,6 +177,89 @@ Tarayıcıda `http://localhost:3000` adresini açın.
 2. "Sign Up" ile ücretsiz hesap oluşturun
 3. Email doğrulaması yapın
 
+#### 1a. Cloudflare Turnstile Widget Oluşturun (ZORUNLU)
+
+⚠️ **ÖNEMLİ:** Turnstile key'leri olmadan site çalışmaz! Önce widget oluşturun.
+
+**Adım 1: Turnstile Dashboard'a Gidin**
+1. [Cloudflare Dashboard](https://dash.cloudflare.com) → Sol menüden **"Turnstile"** seçin
+2. **"Add a widget"** veya **"Add site"** butonuna tıklayın
+
+**Adım 2: Widget Formunu Doldurun**
+
+**📌 Widget adı**
+- Input kutusuna proje adınızı yazın (örn: `hamzagpt`, `gulescigpt`)
+- Bu sadece tanımlama için, önemli değil
+
+**📌 Hostname Yönetimi** ⚠️ **ZORUNLU - EN ÖNEMLİ KISIM!**
+
+Bu kısım zorunludur ve hata alıyorsanız muhtemelen hostname eklememişsinizdir.
+
+1. **"Hostname Ekle"** butonuna tıklayın
+2. Hostname ekleme popup'ı açılacak
+
+**Hostname ne yazmalısınız?**
+
+**Seçenek 1: Henüz deploy etmediyseniz (Önerilen)**
+```
+localhost
+```
+- Geliştirme için `localhost` ekleyin
+- Deploy ettikten sonra production domain'i eklersiniz
+
+**Seçenek 2: Deploy URL'inizi biliyorsanız**
+```
+your-project.pages.dev
+```
+- Cloudflare Pages URL'inizi yazın (örn: `hamzagpt-b02.pages.dev`)
+- Sadece domain adı, `https://` yazmayın
+
+**Seçenek 3: Custom domain kullanacaksanız**
+```
+gulescigpt.com
+```
+- Kendi domain'inizi yazın
+
+**💡 İPUCU:** Birden fazla hostname ekleyebilirsiniz:
+- `localhost` (geliştirme için)
+- `your-project.pages.dev` (Cloudflare Pages için)
+- `gulescigpt.com` (custom domain için)
+
+3. Hostname'i yazıp **"Add"** veya **"Ekle"** butonuna basın
+4. Hostname listede görünecek
+5. En az 1 hostname olduğundan emin olun
+
+**📌 Widget Modu**
+3 seçenek var, **"Managed"** seçin (varsayılan):
+
+- ✅ **Managed (Yönetilen)** - Önerilen, kullanıcı gerektiğinde kutu işaretler
+- ⚪ Non-interactive - Yükleme çubuğu gösterir
+- ⚪ Invisible - Tamamen görünmez
+
+**📌 Ön onay**
+**"Hayır"** seçin (varsayılan)
+
+**Adım 3: Widget'ı Oluşturun**
+1. Formu doldurduktan sonra **"Create"** veya **"Oluştur"** butonuna tıklayın
+2. Widget oluşturulacak ve size **2 adet key** verilecek
+
+**Adım 4: Key'leri Kopyalayın**
+
+Başarılı olursa şu ekranı göreceksiniz:
+
+```
+✅ Widget başarıyla oluşturuldu!
+
+Site Key: 0x4AAAAAAA...
+Secret Key: 0x4AAAAAAA...
+```
+
+**🔑 Bu 2 key'i güvenli bir yere kaydedin:**
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` → Site Key (0x4A ile başlar)
+- `TURNSTILE_SECRET_KEY` → Secret Key (0x4A ile başlar)
+
+⚠️ **Secret Key'i kimseyle paylaşmayın!**
+
 #### 2. Yeni Proje Oluşturun
 1. Dashboard'da **"Create a project"** butonuna tıklayın
 2. **"Connect to Git"** seçeneğini seçin
@@ -231,12 +314,17 @@ ENCRYPTION_KEY=64_karakterlik_hexadecimal_string
 ```env
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAA...
 ```
+*(Yukarıda [1a. adımda](#1a-cloudflare-turnstile-widget-oluşturun-zorunlu) oluşturduğunuz Site Key)*
+
 ```env
 TURNSTILE_SECRET_KEY=0x4AAAAAAA...
 ```
+*(Yukarıda [1a. adımda](#1a-cloudflare-turnstile-widget-oluşturun-zorunlu) oluşturduğunuz Secret Key)*
+
 ```env
 NEXT_PUBLIC_SITE_URL=https://your-site.pages.dev
 ```
+*(Deploy edildikten sonra Pages URL'inizi buraya yazın)*
 ```env
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-xxxxxxxxxxxxxxxx
 ```
