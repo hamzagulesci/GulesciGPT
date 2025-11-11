@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose'
+import crypto from 'crypto'
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'default-secret-change-in-production'
@@ -26,8 +27,32 @@ export async function verifyToken(token: string): Promise<{ userId: string } | n
   }
 }
 
-// Admin şifresini kontrol et
+// Timing-safe string comparison (timing attack koruması)
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    // Farklı uzunluklarda bile sabit süre bekle
+    crypto.timingSafeEqual(Buffer.from(a), Buffer.from(a))
+    return false
+  }
+
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+
+  return crypto.timingSafeEqual(bufA, bufB)
+}
+
+// Admin şifresini kontrol et (timing attack korumalı)
 export function verifyAdminPassword(password: string): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
-  return password === adminPassword
+  const adminPassword = process.env.ADMIN_PASSWORD
+
+  // Production'da şifre zorunlu
+  if (!adminPassword || adminPassword === 'admin123') {
+    console.error('⚠️ GÜVENLİK UYARISI: ADMIN_PASSWORD çevresel değişkeni ayarlanmamış veya varsayılan değerde!')
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Production ortamında ADMIN_PASSWORD ayarlanmalıdır')
+    }
+  }
+
+  // Timing-safe karşılaştırma
+  return timingSafeEqual(password, adminPassword || 'admin123')
 }

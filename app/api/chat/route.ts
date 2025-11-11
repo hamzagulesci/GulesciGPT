@@ -3,6 +3,8 @@ import { getActiveKey, markKeyAsFailed, updateKeyUsage } from '@/lib/keyManager'
 import { incrementMessageCount, addResponseTime } from '@/lib/statsManager'
 import { ChatMessage } from '@/lib/openrouter'
 import { isDeepSeekR1Model } from '@/lib/models'
+import { isValidString } from '@/lib/validation'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -11,7 +13,70 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
   try {
+    // IP-based rate limiting (20 mesaj / dakika)
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+               request.headers.get('x-real-ip') ||
+               'unknown'
+
+    const rateLimitKey = `chat:${ip}`
+    const rateLimit = checkRateLimit(rateLimitKey, 20, 60 * 1000) // 20 req/min
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Çok fazla istek. Lütfen bir dakika bekleyin.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((rateLimit.resetAt - Date.now()) / 1000)),
+            'X-RateLimit-Limit': '20',
+            'X-RateLimit-Remaining': '0'
+          }
+        }
+      )
+    }
+
     const { messages, model, captchaToken } = await request.json()
+
+    // Input validation
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return NextResponse.json(
+        { error: 'Geçersiz mesaj formatı' },
+        { status: 400 }
+      )
+    }
+
+    if (!model || typeof model !== 'string' || !isValidString(model, 200)) {
+      return NextResponse.json(
+        { error: 'Geçersiz model parametresi' },
+        { status: 400 }
+      )
+    }
+
+    // Mesaj sayısı limiti
+    if (messages.length > 100) {
+      return NextResponse.json(
+        { error: 'Çok fazla mesaj (max: 100)' },
+        { status: 400 }
+      )
+    }
+
+    // Her mesajı validate et
+    for (const msg of messages) {
+      if (!msg.content || typeof msg.content !== 'string') {
+        return NextResponse.json(
+          { error: 'Geçersiz mesaj içeriği' },
+          { status: 400 }
+        )
+      }
+
+      // Maksimum mesaj uzunluğu: 50KB
+      if (msg.content.length > 50000) {
+        return NextResponse.json(
+          { error: 'Mesaj çok uzun (max: 50KB)' },
+          { status: 400 }
+        )
+      }
+    }
 
     console.log('🔵 Chat request received:', { model, messageCount: messages.length })
 

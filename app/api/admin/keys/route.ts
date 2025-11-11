@@ -66,7 +66,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const newKey = await addKey(key)
+    // API key formatını kontrol et
+    const trimmedKey = key.trim()
+    if (!trimmedKey.startsWith('sk-or-') || trimmedKey.length < 20) {
+      return NextResponse.json(
+        { error: 'Geçersiz OpenRouter API key formatı. Key "sk-or-" ile başlamalı.' },
+        { status: 400 }
+      )
+    }
+
+    // Maksimum key uzunluğu kontrolü
+    if (trimmedKey.length > 200) {
+      return NextResponse.json(
+        { error: 'API key çok uzun' },
+        { status: 400 }
+      )
+    }
+
+    const newKey = await addKey(trimmedKey)
 
     return NextResponse.json({
       success: true,
