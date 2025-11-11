@@ -185,77 +185,124 @@ Tarayıcıda `http://localhost:3000` adresini açın.
 
 #### 3. Build Ayarlarını Yapılandırın
 
-**Framework Preset:** `Next.js (Static Exports)` SEÇMEYİN!
+Şimdi "Set up builds and deployments" sayfası açılacak. Bu formda şu alanları dolduracaksınız:
 
-⚠️ **ÖNEMLİ:** Next.js projemiz API routes kullandığı için static export yerine **"None"** veya manual ayarları kullanmalısınız.
+**📌 Production branch**
+- Dropdown menüden **branch'inizi seçin** (örn: `main`, `master`, veya `claude/gulescigpt-school-ai-chat-...`)
+- Bu branch'e her push'ta otomatik deploy olacak
 
-**Build ayarları:**
-```
-Production branch: main (veya master)
-Build command: npm run build
-Build output directory: .next
-Root directory: / (boş bırakın)
-```
+**📌 Framework preset**
+- Dropdown menüden **"Next.js"** seçin
+- ⚠️ **ÖNEMLİ:** "Next.js (Static Exports)" SEÇMEYİN! Projemiz API routes kullanıyor, static export çalışmaz.
+- Sadece "Next.js" seçin (logo ile gösterilir)
 
-**Environment Variables (Build):**
-```
-NODE_VERSION=18.17.0
-NPM_VERSION=9.8.0
-```
+**📌 Build command**
+- Input field'a şunu yazın: `npx @cloudflare/next-on-pages@1`
+- Bu komut Next.js'i Cloudflare Pages için optimize eder
 
-#### 4. Environment Variables Ekleyin
+**📌 Build output directory**
+- Input field'a şunu yazın: `.vercel/output/static`
+- "/" prefix otomatik olarak var, sadece klasör adını yazın
 
-**Settings → Environment Variables** bölümünden şu değişkenleri ekleyin:
+**📌 Root directory (advanced)** - AÇMAYIN
+- Bu bölümü açmanıza gerek yok
+- Varsayılan "/" değerini kullanın
 
+**📌 Environment variables (advanced)** - BU BÖLÜMÜ AÇIN
+1. **"Environment variables (advanced)"** bölümüne tıklayıp açın
+2. Her değişken için:
+   - **Variable name** kutusuna değişken adını yazın
+   - **Value** kutusuna değeri yazın
+   - ➕ **"Add variable"** butonuna basın (yeni satır için)
+
+**Eklenecek environment variables:**
 ```env
-# ZORUNLU - Admin Auth
+NODE_VERSION=18.17.0
+```
+```env
 ADMIN_PASSWORD=güvenli_şifreniz_123
+```
+```env
 JWT_SECRET=en_az_32_karakter_uzunlugunda_gizli_anahtar
-
-# ZORUNLU - Encryption (32 byte hex string)
+```
+```env
 ENCRYPTION_KEY=64_karakterlik_hexadecimal_string
-
-# ZORUNLU - Cloudflare Turnstile
+```
+```env
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAAA...
+```
+```env
 TURNSTILE_SECRET_KEY=0x4AAAAAAA...
-
-# ZORUNLU - Site URL
+```
+```env
 NEXT_PUBLIC_SITE_URL=https://your-site.pages.dev
-
-# OPSİYONEL - Google AdSense
+```
+```env
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-xxxxxxxxxxxxxxxx
 ```
+*(Opsiyonel - AdSense kullanmıyorsanız eklemeyin)*
 
 **Encryption Key Oluşturma:**
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-# Çıktı: 64 karakterlik hex string
+# Çıktı: 64 karakterlik hex string (örn: a1b2c3d4...)
 ```
 
-**Her bir variable için:**
-- Variable name yazın
-- Value girin
-- Environment: **Production** seçin
-- **Save** butonuna tıklayın
+**Form özeti:**
+```
+Production branch: main (veya branch'iniz)
+Framework preset: Next.js (dropdown'dan seçin)
+Build command: npx @cloudflare/next-on-pages@1
+Build output directory: .vercel/output/static
+Root directory: / (değiştirmeyin)
+Environment variables: Yukarıdaki 8 değişkeni ekleyin
+```
 
-#### 5. Deploy Edin!
+#### 4. Deploy Edin!
 
-1. **"Save and Deploy"** butonuna tıklayın
+1. Tüm alanları doldurduktan sonra sayfanın en altındaki **"Save and Deploy"** butonuna tıklayın
 2. Build işlemi başlayacak (3-5 dakika sürer)
-3. Build loglarını takip edin
-4. ✅ Build başarılı olursa, siteniz `https://[project-name].pages.dev` adresinde yayında!
+3. Build loglarını canlı olarak takip edebilirsiniz
+4. ✅ Build başarılı olursa şöyle bir mesaj göreceksiniz:
+   ```
+   Success: Assets published!
+   ✨ Success! Uploaded X files (Y seconds)
+   ```
+5. Siteniz otomatik olarak `https://[project-name].pages.dev` adresinde yayında olacak!
 
-#### 6. İlk Kurulumu Yapın
+**Build başarısız olursa:**
+- Logları kontrol edin
+- Environment variables'ı doğru girdiğinizden emin olun
+- [Troubleshooting](#9-troubleshooting-sorun-giderme) bölümüne bakın
 
-1. `https://your-site.pages.dev/login` adresine gidin
-2. Admin şifrenizle giriş yapın (.env'deki ADMIN_PASSWORD)
-3. Admin panelinde **Keys** sekmesine gidin
-4. [OpenRouter](https://openrouter.ai/keys) hesabınızdan API key alın
-5. API key'i admin paneline ekleyin
-6. Test için `https://your-site.pages.dev` ana sayfaya gidin
-7. Bir mesaj gönderin ve çalıştığını doğrulayın ✨
+#### 5. İlk Kurulumu Yapın
 
-#### 7. Custom Domain Bağlama (Opsiyonel)
+Build başarılı olduktan sonra sitenizi test edin:
+
+1. **Admin girişi yapın:**
+   - `https://your-site.pages.dev/login` adresine gidin
+   - Environment variables'a eklediğiniz `ADMIN_PASSWORD` ile giriş yapın
+
+2. **API Key ekleyin:**
+   - Admin panelinde **"Keys"** sekmesine gidin
+   - [OpenRouter](https://openrouter.ai/keys) hesabınızdan API key alın
+   - **"Add API Key"** butonuna tıklayın
+   - Key'i yapıştırıp **"Add"** butonuna basın
+
+3. **Chat'i test edin:**
+   - Ana sayfaya gidin: `https://your-site.pages.dev`
+   - Model seçin (örn: "DeepSeek R1")
+   - Bir mesaj yazın: "Merhaba, nasılsın?"
+   - ✨ AI yanıt veriyorsa kurulum başarılı!
+
+4. **Sorun varsa kontrol edin:**
+   - [ ] Admin login çalışıyor mu?
+   - [ ] API key eklenebildi mi?
+   - [ ] Chat mesaj gönderiyor mu?
+   - [ ] 401 hatası alıyor musunuz? → Environment variables kontrol edin
+   - [ ] API key çalışmıyor mu? → OpenRouter dashboard'da kontrol edin
+
+#### 6. Custom Domain Bağlama (Opsiyonel)
 
 **Domain'inizi bağlamak için:**
 
@@ -284,7 +331,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 4. Cloudflare Pages'de "Activate domain"
 5. SSL sertifikası otomatik oluşturulacak
 
-#### 8. Otomatik Deployment (CI/CD)
+#### 7. Otomatik Deployment (CI/CD)
 
 ✅ **Artık her GitHub push'ta otomatik deploy olacak!**
 
@@ -306,17 +353,28 @@ git push origin main
 - Pull request'lerde otomatik preview
 - Örnek: `feature-xyz.your-project.pages.dev`
 
-#### 9. Troubleshooting (Sorun Giderme)
+#### 8. Troubleshooting (Sorun Giderme)
 
 **Build başarısız olursa:**
 
-**Hata: "Command not found: npm"**
+**❌ Hata: "Error: Could not find Next.js production build"**
+```
+Çözüm 1: Build command'i kontrol edin
+Doğru: npx @cloudflare/next-on-pages@1
+Yanlış: npm run build
+
+Çözüm 2: Build output directory'yi kontrol edin
+Doğru: .vercel/output/static
+Yanlış: .next veya out
+```
+
+**❌ Hata: "Command not found: npm"**
 ```
 Çözüm: Environment Variables'a ekleyin:
 NODE_VERSION=18.17.0
 ```
 
-**Hata: "Module not found"**
+**❌ Hata: "Module not found"**
 ```bash
 Çözüm: package-lock.json dosyası commit edilmiş olmalı
 git add package-lock.json
@@ -324,10 +382,11 @@ git commit -m "fix: add package-lock"
 git push
 ```
 
-**Hata: "EACCES: permission denied"**
+**❌ Hata: "Next.js Static Exports does not support API Routes"**
 ```
-Çözüm: Build command'i düzeltin:
-npm ci && npm run build
+Çözüm: Framework preset'i değiştirin
+Yanlış: "Next.js (Static Exports)"
+Doğru: "Next.js"
 ```
 
 **401 Auth Hataları:**
@@ -354,7 +413,7 @@ Build cache için Settings → Environment →
 "Preserve build cache" aktif edin
 ```
 
-#### 10. Performans Optimizasyonu
+#### 9. Performans Optimizasyonu
 
 **Cloudflare Pages'te hız için:**
 
@@ -374,7 +433,7 @@ Build cache için Settings → Environment →
    - API keys için KV storage kullanılabilir
    - data/ klasörü yerine production-ready çözüm
 
-#### 11. Production Checklist (Cloudflare Pages)
+#### 10. Production Checklist (Cloudflare Pages)
 
 Deploy etmeden önce kontrol edin:
 
@@ -390,7 +449,7 @@ Deploy etmeden önce kontrol edin:
 - [ ] ✅ Custom domain bağlandı (opsiyonel)
 - [ ] ✅ SSL aktif (yeşil kilit)
 
-#### 12. Cloudflare Pages vs Vercel Karşılaştırma
+#### 11. Cloudflare Pages vs Vercel Karşılaştırma
 
 | Özellik | Cloudflare Pages | Vercel |
 |---------|------------------|--------|
