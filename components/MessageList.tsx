@@ -112,12 +112,14 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
                   <ReactMarkdown
                     components={{
                       p: ({ node, ...props }) => <p className="m-0 mb-2 last:mb-0" {...props} />,
-                      code: ({ node, inline, ...props }) =>
-                        inline ? (
+                      code: ({ node, className, ...props }: any) => {
+                        const inline = !className
+                        return inline ? (
                           <code style={{ background: '#2C2C2C', color: 'var(--text-secondary)' }} className="px-1 py-0.5 rounded text-sm" {...props} />
                         ) : (
-                          <code style={{ background: '#0D0D0D', color: 'var(--text-secondary)' }} className="block p-3 rounded my-2 overflow-x-auto font-mono text-sm" {...props} />
-                        ),
+                          <code style={{ background: '#0D0D0D', color: 'var(--text-secondary)' }} className={`block p-3 rounded my-2 overflow-x-auto font-mono text-sm ${className || ''}`} {...props} />
+                        )
+                      },
                     }}
                   >
                     {message.content}
