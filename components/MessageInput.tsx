@@ -1,32 +1,25 @@
 'use client'
 
 import { useState, useRef, KeyboardEvent, memo } from 'react'
-import { Send } from 'lucide-react'
+import { Send, Square } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { TurnstileWidget } from './TurnstileWidget'
 
 interface MessageInputProps {
   onSend: (message: string, captchaToken: string) => void
   disabled?: boolean
+  onStop?: () => void
 }
 
-export const MessageInput = memo(function MessageInput({ onSend, disabled }: MessageInputProps) {
+export const MessageInput = memo(function MessageInput({ onSend, disabled, onStop }: MessageInputProps) {
   const [message, setMessage] = useState('')
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // CAPTCHA yoksa (development için) otomatik bypass
-  const hasCaptcha = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
-
   const handleSend = () => {
-    // CAPTCHA yoksa veya token varsa gönder
-    const captchaValid = !hasCaptcha || captchaToken
-    if (!message.trim() || !captchaValid || disabled) return
+    if (!message.trim() || disabled) return
 
-    onSend(message.trim(), captchaToken || 'dev-bypass')
+    onSend(message.trim(), 'no-captcha')
     setMessage('')
-    setCaptchaToken(null) // CAPTCHA'yı sıfırla, kullanıcı yeni CAPTCHA çözmeli
 
     // Textarea'yı sıfırla
     if (textareaRef.current) {
@@ -49,7 +42,7 @@ export const MessageInput = memo(function MessageInput({ onSend, disabled }: Mes
     }
   }
 
-  const canSend = message.trim() && (!hasCaptcha || captchaToken) && !disabled
+  const canSend = message.trim() && !disabled
 
   return (
     <div
@@ -59,29 +52,6 @@ export const MessageInput = memo(function MessageInput({ onSend, disabled }: Mes
         borderTop: '1px solid var(--border-color)'
       }}
     >
-      {/* CAPTCHA Widget - sadece production'da göster */}
-      {hasCaptcha ? (
-        <div className="flex justify-center">
-          <TurnstileWidget
-            onSuccess={(token) => setCaptchaToken(token)}
-            onError={() => setCaptchaToken(null)}
-          />
-        </div>
-      ) : (
-        <div className="flex justify-center">
-          <p
-            className="text-xs px-2 md:px-3 py-1.5 md:py-2 rounded"
-            style={{
-              background: 'rgba(255, 193, 7, 0.1)',
-              color: '#FFC107',
-              border: '1px solid rgba(255, 193, 7, 0.3)'
-            }}
-          >
-            ⚠️ CAPTCHA devre dışı (Development modu)
-          </p>
-        </div>
-      )}
-
       {/* Mesaj Input */}
       <div className="flex gap-2 items-end">
         <Textarea
@@ -106,20 +76,36 @@ export const MessageInput = memo(function MessageInput({ onSend, disabled }: Mes
           rows={2}
           aria-label="Mesaj yazma alanı"
         />
-        <Button
-          onClick={handleSend}
-          disabled={!canSend}
-          size="icon"
-          className="h-[50px] w-[50px] md:h-[60px] md:w-[60px] flex-shrink-0"
-          style={{
-            background: canSend ? 'var(--color-action)' : 'var(--border-color)',
-            color: 'var(--text-primary)',
-            borderRadius: '6px'
-          }}
-          aria-label="Mesaj gönder"
-        >
-          <Send className="h-4 w-4 md:h-5 md:w-5" />
-        </Button>
+        {disabled && onStop ? (
+          <Button
+            onClick={onStop}
+            size="icon"
+            className="h-[50px] w-[50px] md:h-[60px] md:w-[60px] flex-shrink-0"
+            style={{
+              background: '#ef4444',
+              color: 'white',
+              borderRadius: '6px'
+            }}
+            aria-label="Durdur"
+          >
+            <Square className="h-4 w-4 md:h-5 md:w-5" fill="currentColor" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleSend}
+            disabled={!canSend}
+            size="icon"
+            className="h-[50px] w-[50px] md:h-[60px] md:w-[60px] flex-shrink-0"
+            style={{
+              background: canSend ? 'var(--color-action)' : 'var(--border-color)',
+              color: 'var(--text-primary)',
+              borderRadius: '6px'
+            }}
+            aria-label="Mesaj gönder"
+          >
+            <Send className="h-4 w-4 md:h-5 md:w-5" />
+          </Button>
+        )}
       </div>
 
       <p className="text-xs text-center hidden md:block" style={{ color: 'var(--text-muted)' }}>

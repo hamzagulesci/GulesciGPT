@@ -19,10 +19,40 @@ interface MessageListProps {
 export const MessageList = memo(function MessageList({ messages, isLoading, modelId }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const userScrolledRef = useRef(false)
+  const lastScrollTop = useRef(0)
 
-  // Otomatik scroll
+  // Kullanıcı scroll yaptığını tespit et
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = containerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50
+
+      // Kullanıcı yukarı scroll yaptıysa, otomatik scroll'u durdur
+      if (scrollTop < lastScrollTop.current) {
+        userScrolledRef.current = true
+      }
+
+      // Kullanıcı en alta geldiyse, otomatik scroll'u aktif et
+      if (isAtBottom) {
+        userScrolledRef.current = false
+      }
+
+      lastScrollTop.current = scrollTop
+    }
+
+    container.addEventListener('scroll', handleScroll)
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Otomatik scroll (sadece kullanıcı manuel scroll yapmadıysa)
+  useEffect(() => {
+    if (!userScrolledRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages, isLoading])
 
   if (messages.length === 0 && !isLoading) {
@@ -39,10 +69,11 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4"
+      className="flex-1 overflow-y-auto p-3 md:p-4"
       style={{ background: 'var(--bg-primary)' }}
     >
-      {messages.map((message, index) => {
+      <div className="max-w-4xl mx-auto space-y-3 md:space-y-4">
+        {messages.map((message, index) => {
         const isUser = message.role === 'user'
         const isDeepSeekR1 = modelId.toLowerCase().includes('deepseek') &&
                              modelId.toLowerCase().includes('r1')
@@ -96,25 +127,26 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
             </div>
           </div>
         )
-      })}
+        })}
 
-      {/* Loading indicator */}
-      {isLoading && (
-        <div className="flex justify-start">
-          <div className="max-w-[80%] rounded-lg px-4 py-3" style={{ background: 'var(--bg-secondary)' }}>
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: 'var(--color-action)', animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: 'var(--color-action)', animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: 'var(--color-action)', animationDelay: '300ms' }} />
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="max-w-[80%] rounded-lg px-4 py-3" style={{ background: 'var(--bg-secondary)' }}>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: 'var(--color-action)', animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: 'var(--color-action)', animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: 'var(--color-action)', animationDelay: '300ms' }} />
+                </div>
+                <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Yazıyor...</span>
               </div>
-              <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Yazıyor...</span>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} />
+      </div>
     </div>
   )
 })

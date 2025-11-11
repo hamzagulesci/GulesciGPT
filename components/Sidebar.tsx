@@ -153,17 +153,7 @@ export function Sidebar({
 
       {/* Ad Space - Sidebar Bottom */}
       <div className="p-4" style={{ borderTop: '1px solid var(--border-color)' }}>
-        <div
-          id="ad-sidebar"
-          className="w-full h-[250px] flex items-center justify-center text-sm rounded"
-          style={{
-            background: 'var(--bg-secondary)',
-            color: 'var(--text-muted)',
-            border: '1px solid var(--border-color)'
-          }}
-        >
-          Reklam Alanı (300x250)
-        </div>
+        <div id="ad-sidebar" className="w-full h-[250px]"></div>
       </div>
     </div>
   )

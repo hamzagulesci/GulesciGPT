@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
 import { Sidebar } from './Sidebar'
 import { MessageList } from './MessageList'
@@ -40,6 +40,7 @@ export function Chat() {
   const [selectedModel, setSelectedModelState] = useState(DEFAULT_MODEL)
   const [showModelChangeDialog, setShowModelChangeDialog] = useState(false)
   const [pendingModel, setPendingModel] = useState<string | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Load chats ve selected model on mount
   useEffect(() => {
@@ -145,6 +146,10 @@ export function Chat() {
     setMessages(newMessages)
     setIsLoading(true)
 
+    // Yeni AbortController oluştur
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
+
     try {
       // API'ye istek gönder
       const response = await fetch('/api/chat', {
@@ -155,6 +160,7 @@ export function Chat() {
           model: selectedModel,
           captchaToken,
         }),
+        signal: abortController.signal,
       })
 
       if (!response.ok) {
@@ -246,6 +252,12 @@ export function Chat() {
       setMessages(finalMessages)
 
     } catch (error: any) {
+      // AbortError'u sessizce yoksay
+      if (error.name === 'AbortError') {
+        console.log('İstek kullanıcı tarafından iptal edildi')
+        return
+      }
+
       console.error('Chat hatası:', error)
 
       // Daha uzun toast için duration artır
@@ -260,8 +272,17 @@ export function Chat() {
       setMessages(messages)
     } finally {
       setIsLoading(false)
+      abortControllerRef.current = null
     }
   }
+
+  const handleStopGeneration = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      setIsLoading(false)
+      toast.info('Yanıt oluşturma durduruldu')
+    }
+  }, [])
 
   return (
     <>
@@ -313,6 +334,7 @@ export function Chat() {
           <MessageInput
             onSend={handleSendMessage}
             disabled={isLoading}
+            onStop={handleStopGeneration}
           />
         </main>
       </div>

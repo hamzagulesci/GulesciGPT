@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { KeyManagementTab } from './KeyManagementTab'
 import { StatsTab } from './StatsTab'
 import { SystemStatusTab } from './SystemStatusTab'
+import { SettingsTab } from './SettingsTab'
 
 interface ApiKey {
   id: string
@@ -116,7 +117,7 @@ export function AdminDashboard() {
 
       <Tabs defaultValue="keys" className="w-full">
         <TabsList
-          className="grid w-full grid-cols-3 max-w-md"
+          className="grid w-full grid-cols-4 max-w-2xl"
           style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)'
@@ -143,6 +144,13 @@ export function AdminDashboard() {
           >
             Sistem
           </TabsTrigger>
+          <TabsTrigger
+            value="settings"
+            style={{ color: 'var(--text-secondary)' }}
+            aria-label="Ayarlar"
+          >
+            Ayarlar
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="keys" className="mt-6">
@@ -159,6 +167,10 @@ export function AdminDashboard() {
             keyStats={statsData.keyStats}
             onRefresh={refreshData}
           />
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-6">
+          <SettingsTab />
         </TabsContent>
       </Tabs>
     </div>
