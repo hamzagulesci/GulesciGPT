@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2, Menu, X } from 'lucide-react'
+import { Plus, Trash2, Menu, X, Pencil, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Chat } from '@/lib/localStorage'
+import { Chat, renameChatTitle } from '@/lib/localStorage'
 import { formatDate } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { ModelSelector } from './ModelSelector'
+import { toast } from 'sonner'
 
 interface SidebarProps {
   chats: Chat[]
@@ -16,6 +17,7 @@ interface SidebarProps {
   onSelectChat: (chatId: string) => void
   onDeleteChat: (chatId: string) => void
   onModelChange: (modelId: string) => void
+  onRefresh?: () => void
   isOpen?: boolean
   onToggle?: () => void
 }
@@ -28,10 +30,14 @@ export function Sidebar({
   onSelectChat,
   onDeleteChat,
   onModelChange,
+  onRefresh,
   isOpen: externalIsOpen,
   onToggle,
 }: SidebarProps) {
   const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const [editingChatId, setEditingChatId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
+
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
 
   const toggleSidebar = () => {
@@ -40,6 +46,31 @@ export function Sidebar({
     } else {
       setInternalIsOpen(!isOpen)
     }
+  }
+
+  const handleStartEdit = (chat: Chat) => {
+    setEditingChatId(chat.chatId)
+    setEditingTitle(chat.title)
+  }
+
+  const handleSaveEdit = () => {
+    if (!editingChatId || !editingTitle.trim()) return
+
+    const success = renameChatTitle(editingChatId, editingTitle.trim())
+    if (success) {
+      toast.success('Sohbet ismi değiştirildi')
+      onRefresh?.()
+    } else {
+      toast.error('İsim değiştirilemedi')
+    }
+
+    setEditingChatId(null)
+    setEditingTitle('')
+  }
+
+  const handleCancelEdit = () => {
+    setEditingChatId(null)
+    setEditingTitle('')
   }
 
   const sidebarContent = (
@@ -138,25 +169,91 @@ export function Sidebar({
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text-secondary)' }}>
-                      {chat.title}
-                    </p>
-                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                      {formatDate(chat.updatedAt)}
-                    </p>
+                    {editingChatId === chat.chatId ? (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="text"
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveEdit()
+                            if (e.key === 'Escape') handleCancelEdit()
+                          }}
+                          className="w-full px-2 py-1 text-sm rounded"
+                          style={{
+                            background: 'var(--bg-primary)',
+                            color: 'var(--text-secondary)',
+                            border: '1px solid var(--color-action)'
+                          }}
+                          autoFocus
+                          onFocus={(e) => e.target.select()}
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium truncate" style={{ color: 'var(--text-secondary)' }}>
+                          {chat.title}
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                          {formatDate(chat.updatedAt)}
+                        </p>
+                      </>
+                    )}
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onDeleteChat(chat.chatId)
-                    }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded"
-                    style={{ background: 'var(--color-alert)' }}
-                    aria-label={`${chat.title} sohbetini sil`}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {editingChatId === chat.chatId ? (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSaveEdit()
+                          }}
+                          className="p-1 rounded"
+                          style={{ background: 'var(--color-success)', color: 'white' }}
+                          aria-label="Kaydet"
+                        >
+                          <Check className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleCancelEdit()
+                          }}
+                          className="p-1 rounded"
+                          style={{ background: 'var(--border-color)' }}
+                          aria-label="İptal"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleStartEdit(chat)
+                          }}
+                          className="p-1 rounded"
+                          style={{ background: 'var(--color-action)' }}
+                          aria-label="İsmi değiştir"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onDeleteChat(chat.chatId)
+                          }}
+                          className="p-1 rounded"
+                          style={{ background: 'var(--color-alert)' }}
+                          aria-label={`${chat.title} sohbetini sil`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             ))

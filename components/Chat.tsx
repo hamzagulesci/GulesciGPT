@@ -301,6 +301,7 @@ export function Chat() {
           onDeleteChat={handleDeleteChat}
           onModelChange={handleModelChange}
           isOpen={isSidebarOpen}
+          onRefresh={() => setChats(getAllChats())}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 

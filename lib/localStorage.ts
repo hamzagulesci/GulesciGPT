@@ -95,11 +95,12 @@ export function getSelectedModel(): string | null {
   return localStorage.getItem(SELECTED_MODEL_KEY)
 }
 
-// Yeni chat oluştur
+// Yeni chat oluştur (model adıyla)
 export function createNewChat(model: string): Chat {
+  const modelName = model.split('/').pop()?.split(':')[0] || 'AI'
   return {
     chatId: crypto.randomUUID(),
-    title: 'Yeni Sohbet',
+    title: `Yeni Sohbet - ${modelName}`,
     model,
     messages: [],
     createdAt: new Date().toISOString(),
@@ -109,12 +110,35 @@ export function createNewChat(model: string): Chat {
 
 // Chat title güncelle (ilk mesajdan)
 export function updateChatTitle(chat: Chat): Chat {
-  if (chat.messages.length > 0 && chat.title === 'Yeni Sohbet') {
+  if (chat.messages.length > 0 && chat.title.startsWith('Yeni Sohbet')) {
     const firstUserMessage = chat.messages.find(m => m.role === 'user')
     if (firstUserMessage) {
       const content = firstUserMessage.content
-      chat.title = content.length > 30 ? content.substring(0, 30) + '...' : content
+      const modelName = chat.model.split('/').pop()?.split(':')[0] || 'AI'
+      const shortContent = content.length > 30 ? content.substring(0, 30) + '...' : content
+      chat.title = `${shortContent} - ${modelName}`
     }
   }
   return chat
+}
+
+// Chat title manuel güncelle
+export function renameChatTitle(chatId: string, newTitle: string): boolean {
+  if (typeof window === 'undefined') return false
+
+  try {
+    const chats = getAllChats()
+    const chatIndex = chats.findIndex(c => c.chatId === chatId)
+
+    if (chatIndex === -1) return false
+
+    chats[chatIndex].title = newTitle
+    chats[chatIndex].updatedAt = new Date().toISOString()
+
+    localStorage.setItem(CHATS_KEY, JSON.stringify(chats))
+    return true
+  } catch (error) {
+    console.error('Chat ismi değiştirme hatası:', error)
+    return false
+  }
 }
