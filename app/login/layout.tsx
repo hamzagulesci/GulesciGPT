@@ -1,12 +1,12 @@
 import { ReactNode } from 'react'
 import Script from 'next/script'
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default function LoginLayout({ children }: { children: ReactNode }) {
   const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID
 
   return (
     <>
-      {/* Google AdSense - Admin paneli için de eklendi */}
+      {/* Google AdSense - Login sayfası için de eklendi */}
       {adsenseId && (
         <Script
           async
