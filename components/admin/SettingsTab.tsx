@@ -1,17 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { enableEncryption, disableEncryption, getEncryptionStatus } from '@/lib/encryptionWrapper'
 
 export function SettingsTab() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isChanging, setIsChanging] = useState(false)
+  const [encryptionStatus, setEncryptionStatus] = useState({ enabled: false, dataEncrypted: false })
+  const [isTogglingEncryption, setIsTogglingEncryption] = useState(false)
 
   const handlePasswordChange = async () => {
     // Validation
@@ -75,6 +78,41 @@ export function SettingsTab() {
       setIsChanging(false)
     }
   }
+
+  const handleToggleEncryption = async () => {
+    const confirmed = confirm(
+      encryptionStatus.enabled
+        ? 'Şifrelemeyi kapatmak istediğinizden emin misiniz? Verileriniz şifresiz saklanacak.'
+        : 'Şifreleme etkinleştirilecek. Mevcut sohbet verileriniz güvenli bir şekilde şifrelenecek. Onaylıyor musunuz?'
+    )
+
+    if (!confirmed) return
+
+    setIsTogglingEncryption(true)
+
+    try {
+      if (encryptionStatus.enabled) {
+        await disableEncryption()
+        toast.success('Şifreleme kapatıldı')
+      } else {
+        await enableEncryption()
+        toast.success('Şifreleme etkinleştirildi! Verileriniz artık güvende.')
+      }
+
+      // Update status
+      setEncryptionStatus(getEncryptionStatus())
+    } catch (error: any) {
+      toast.error('İşlem başarısız: ' + error.message)
+      console.error('Encryption toggle error:', error)
+    } finally {
+      setIsTogglingEncryption(false)
+    }
+  }
+
+  useEffect(() => {
+    // Load encryption status on mount
+    setEncryptionStatus(getEncryptionStatus())
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -169,6 +207,82 @@ export function SettingsTab() {
           >
             {isChanging ? 'Değiştiriliyor...' : 'Şifreyi Değiştir'}
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Data Encryption Card */}
+      <Card style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+        <CardHeader>
+          <CardTitle style={{ color: 'var(--text-primary)' }}>Veri Şifreleme</CardTitle>
+          <CardDescription style={{ color: 'var(--text-tertiary)' }}>
+            Kullanıcı sohbet verilerini tarayıcıda şifreleyerek koruyun
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div
+            className="p-4 rounded-lg border"
+            style={{
+              background: encryptionStatus.enabled
+                ? 'rgba(16, 185, 129, 0.1)'
+                : 'rgba(107, 114, 128, 0.1)',
+              borderColor: encryptionStatus.enabled
+                ? 'rgba(16, 185, 129, 0.3)'
+                : 'rgba(107, 114, 128, 0.3)'
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h4
+                  className="font-semibold text-sm"
+                  style={{
+                    color: encryptionStatus.enabled ? '#10b981' : 'var(--text-secondary)'
+                  }}
+                >
+                  {encryptionStatus.enabled ? '🔒 Şifreleme Aktif' : '🔓 Şifreleme Kapalı'}
+                </h4>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
+                  Durum: {encryptionStatus.dataEncrypted ? 'Veriler şifreli' : 'Veriler açık'}
+                </p>
+              </div>
+              <Button
+                onClick={handleToggleEncryption}
+                disabled={isTogglingEncryption}
+                variant={encryptionStatus.enabled ? 'destructive' : 'default'}
+                size="sm"
+              >
+                {isTogglingEncryption
+                  ? 'İşleniyor...'
+                  : encryptionStatus.enabled
+                  ? 'Kapat'
+                  : 'Etkinleştir'}
+              </Button>
+            </div>
+
+            <div className="text-xs space-y-1" style={{ color: 'var(--text-tertiary)' }}>
+              <p>
+                <strong>Nasıl çalışır:</strong> Sohbet verileri tarayıcınızda AES-GCM algoritması
+                ile şifrelenir. Şifreleme anahtarı cihazınıza özgüdür ve sunucuya gönderilmez.
+              </p>
+              {encryptionStatus.enabled && (
+                <p className="text-xs mt-2" style={{ color: '#10b981' }}>
+                  ✓ Verileriniz güvenli bir şekilde korunuyor
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div
+            className="p-3 rounded text-xs"
+            style={{
+              background: 'rgba(59, 130, 246, 0.1)',
+              color: '#60A5FA',
+              border: '1px solid rgba(59, 130, 246, 0.3)'
+            }}
+          >
+            <strong>Not:</strong> Şifreleme tarayıcı tabanlıdır. Tarayıcı verilerini temizlerseniz
+            şifreleme anahtarı kaybolur ve şifreli verilere erişemezsiniz. Önemli sohbetlerinizi
+            yedeklemeyi unutmayın.
+          </div>
         </CardContent>
       </Card>
     </div>

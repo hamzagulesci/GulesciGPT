@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { getAllKeys, addKey, deleteKey, toggleKeyStatus } from '@/lib/keyManager'
 import { maskApiKey } from '@/lib/utils'
+import { logAuditAction } from '@/lib/auditLogger'
 
 // Middleware: Admin auth kontrolü
 async function checkAuth(request: NextRequest) {
@@ -85,6 +86,12 @@ export async function POST(request: NextRequest) {
 
     const newKey = await addKey(trimmedKey)
 
+    // Audit log
+    await logAuditAction('add_key', `API key eklendi: ${maskApiKey(trimmedKey)}`, {
+      ip: request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown',
+      userAgent: request.headers.get('user-agent') || undefined
+    })
+
     return NextResponse.json({
       success: true,
       key: {
@@ -131,6 +138,12 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
+    // Audit log
+    await logAuditAction('remove_key', `API key silindi: ${keyId}`, {
+      ip: request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown',
+      userAgent: request.headers.get('user-agent') || undefined
+    })
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Key silme hatası:', error)
@@ -170,6 +183,12 @@ export async function PATCH(request: NextRequest) {
         { status: 404 }
       )
     }
+
+    // Audit log
+    await logAuditAction('toggle_key', `API key durumu değiştirildi: ${keyId} -> ${isActive ? 'Aktif' : 'Pasif'}`, {
+      ip: request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown',
+      userAgent: request.headers.get('user-agent') || undefined
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

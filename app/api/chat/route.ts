@@ -5,6 +5,8 @@ import { ChatMessage } from '@/lib/openrouter'
 import { isDeepSeekR1Model } from '@/lib/models'
 import { isValidString } from '@/lib/validation'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { logError } from '@/lib/errorLogger'
+import { trackTokenUsage } from '@/lib/tokenTracker'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -22,6 +24,13 @@ export async function POST(request: NextRequest) {
     const rateLimit = checkRateLimit(rateLimitKey, 20, 60 * 1000) // 20 req/min
 
     if (!rateLimit.allowed) {
+      await logError('chat', 'Rate limit exceeded', {
+        message: `IP: ${ip}`,
+        ip,
+        userAgent: request.headers.get('user-agent') || undefined,
+        endpoint: '/api/chat',
+        statusCode: 429
+      })
       return NextResponse.json(
         { error: 'Çok fazla istek. Lütfen bir dakika bekleyin.' },
         {
@@ -127,11 +136,22 @@ export async function POST(request: NextRequest) {
 
           // 401 hatası - invalid key
           if (response.status === 401) {
+            await logError('api', 'OpenRouter API 401 - Invalid key', {
+              message: `Key ID: ${apiKey.id}, Error: ${errorText.substring(0, 200)}`,
+              endpoint: '/api/chat',
+              statusCode: 401
+            })
             await markKeyAsFailed(apiKey.id)
             apiKey = getActiveKey()
             retryCount++
             continue
           }
+
+          await logError('api', 'OpenRouter API error', {
+            message: `Status: ${response.status}, Error: ${errorText.substring(0, 200)}`,
+            endpoint: '/api/chat',
+            statusCode: response.status
+          })
 
           return NextResponse.json(
             { error: 'AI yanıtı alınamadı' },
@@ -144,6 +164,7 @@ export async function POST(request: NextRequest) {
 
         // Streaming response oluştur
         const encoder = new TextEncoder()
+        let accumulatedOutput = '' // Track output for token counting
         const stream = new ReadableStream({
           async start(controller) {
             const reader = response.body!.getReader()
@@ -175,6 +196,7 @@ export async function POST(request: NextRequest) {
 
                         // Normal content
                         if (delta.content) {
+                          accumulatedOutput += delta.content
                           controller.enqueue(
                             encoder.encode(`data: ${JSON.stringify({ type: 'content', data: delta.content })}\n\n`)
                           )
@@ -193,8 +215,12 @@ export async function POST(request: NextRequest) {
                   }
                 }
               }
-            } catch (error) {
+            } catch (error: any) {
               console.error('Stream okuma hatası:', error)
+              await logError('chat', 'Stream reading error', {
+                message: error.message || 'Unknown stream error',
+                endpoint: '/api/chat'
+              })
               controller.error(error)
             } finally {
               reader.releaseLock()
@@ -203,6 +229,14 @@ export async function POST(request: NextRequest) {
               const responseTime = Date.now() - startTime
               await incrementMessageCount(model)
               await addResponseTime(responseTime)
+
+              // Token kullanımını takip et
+              try {
+                const inputText = messages.map((m: any) => m.content).join('\n')
+                await trackTokenUsage(model, inputText, accumulatedOutput)
+              } catch (tokenError) {
+                console.error('Token tracking hatası:', tokenError)
+              }
             }
           }
         })
@@ -238,6 +272,12 @@ export async function POST(request: NextRequest) {
     console.error('❌ Chat API FATAL ERROR:', error)
     console.error('❌ Error stack:', error.stack)
     console.error('❌ Error message:', error.message)
+
+    await logError('system', 'Chat API fatal error', {
+      message: `${error.message}\n${error.stack?.substring(0, 500) || ''}`,
+      endpoint: '/api/chat',
+      statusCode: 500
+    })
 
     return NextResponse.json(
       { error: `Sunucu hatası: ${error.message}` },

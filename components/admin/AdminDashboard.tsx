@@ -7,6 +7,9 @@ import { KeyManagementTab } from './KeyManagementTab'
 import { StatsTab } from './StatsTab'
 import { SystemStatusTab } from './SystemStatusTab'
 import { SettingsTab } from './SettingsTab'
+import { ErrorsTab } from './ErrorsTab'
+import { TokensTab } from './TokensTab'
+import { AuditTab } from './AuditTab'
 
 interface ApiKey {
   id: string
@@ -24,6 +27,7 @@ interface StatsData {
     todayMessages: number
     averageResponseTime: number
     lastUpdated: string | null
+    activeUsers: number
   }
   messageTrend: { date: string; count: number }[]
   topModels: { model: string; count: number }[]
@@ -117,7 +121,7 @@ export function AdminDashboard() {
 
       <Tabs defaultValue="keys" className="w-full">
         <TabsList
-          className="grid w-full grid-cols-2 md:grid-cols-4 max-w-2xl gap-1"
+          className="grid w-full grid-cols-2 md:grid-cols-4 xl:grid-cols-7 max-w-5xl gap-1"
           style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)'
@@ -155,6 +159,30 @@ export function AdminDashboard() {
           >
             Ayarlar
           </TabsTrigger>
+          <TabsTrigger
+            value="errors"
+            className="text-xs md:text-sm px-2 md:px-4"
+            style={{ color: 'var(--text-secondary)' }}
+            aria-label="Hata Logları"
+          >
+            Hatalar
+          </TabsTrigger>
+          <TabsTrigger
+            value="tokens"
+            className="text-xs md:text-sm px-2 md:px-4"
+            style={{ color: 'var(--text-secondary)' }}
+            aria-label="Token İstatistikleri"
+          >
+            Tokenler
+          </TabsTrigger>
+          <TabsTrigger
+            value="audit"
+            className="text-xs md:text-sm px-2 md:px-4"
+            style={{ color: 'var(--text-secondary)' }}
+            aria-label="Audit Logları"
+          >
+            Audit
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="keys" className="mt-3 md:mt-6">
@@ -175,6 +203,18 @@ export function AdminDashboard() {
 
         <TabsContent value="settings" className="mt-3 md:mt-6">
           <SettingsTab />
+        </TabsContent>
+
+        <TabsContent value="errors" className="mt-3 md:mt-6">
+          <ErrorsTab />
+        </TabsContent>
+
+        <TabsContent value="tokens" className="mt-3 md:mt-6">
+          <TokensTab />
+        </TabsContent>
+
+        <TabsContent value="audit" className="mt-3 md:mt-6">
+          <AuditTab />
         </TabsContent>
       </Tabs>
     </div>

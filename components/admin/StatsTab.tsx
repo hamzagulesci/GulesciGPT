@@ -30,7 +30,14 @@ export function StatsTab({ data }: StatsTabProps) {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Overview Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+        <Card>
+          <CardHeader className="pb-2 p-3 md:p-6">
+            <CardDescription className="text-xs md:text-sm">Aktif Kullanıcı</CardDescription>
+            <CardTitle className="text-xl md:text-3xl text-green-500">{stats.activeUsers}</CardTitle>
+          </CardHeader>
+        </Card>
+
         <Card>
           <CardHeader className="pb-2 p-3 md:p-6">
             <CardDescription className="text-xs md:text-sm">Bugün</CardDescription>

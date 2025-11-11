@@ -289,6 +289,19 @@ export function Chat() {
     }
   }, [])
 
+  // Session tracking (heartbeat)
+  useEffect(() => {
+    // İlk heartbeat
+    fetch('/api/session', { method: 'POST' }).catch(() => {})
+
+    // Her 2 dakikada bir heartbeat
+    const interval = setInterval(() => {
+      fetch('/api/session', { method: 'POST' }).catch(() => {})
+    }, 2 * 60 * 1000)
+
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <>
       <div className="flex h-screen">

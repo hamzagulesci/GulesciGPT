@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { getStats, getMessageTrend, getTopModels, getTodayMessageCount, resetStats } from '@/lib/statsManager'
 import { getAllKeys } from '@/lib/keyManager'
+import { getActiveUserCount, getSessionStats } from '@/lib/sessionManager'
 
 // Middleware: Admin auth kontrolü
 async function checkAuth(request: NextRequest) {
@@ -37,13 +38,18 @@ export async function GET(request: NextRequest) {
     const activeKeyCount = keys.filter(k => k.isActive).length
     const inactiveKeyCount = keys.filter(k => !k.isActive).length
 
+    // Aktif kullanıcı sayısı ve session istatistikleri
+    const activeUsers = getActiveUserCount()
+    const sessionStats = getSessionStats()
+
     return NextResponse.json({
       stats: {
         totalMessages: stats.totalMessages,
         totalChats: stats.totalChats,
         todayMessages,
         averageResponseTime: stats.averageResponseTime,
-        lastUpdated: stats.lastUpdated
+        lastUpdated: stats.lastUpdated,
+        activeUsers
       },
       messageTrend,
       topModels,
@@ -51,7 +57,8 @@ export async function GET(request: NextRequest) {
         active: activeKeyCount,
         inactive: inactiveKeyCount,
         total: keys.length
-      }
+      },
+      sessionStats
     })
   } catch (error) {
     console.error('Stats getirme hatası:', error)
