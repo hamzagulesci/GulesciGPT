@@ -10,6 +10,7 @@ interface StatsData {
     todayMessages: number
     averageResponseTime: number
     lastUpdated: string | null
+    activeUsers: number
   }
   messageTrend: { date: string; count: number }[]
   topModels: { model: string; count: number }[]

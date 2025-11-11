@@ -217,7 +217,7 @@ Tarayıcıda `http://localhost:3000` adresini açın.
 
 **Eklenecek environment variables:**
 ```env
-NODE_VERSION=18.17.0
+NODE_VERSION=20.18.0
 ```
 ```env
 ADMIN_PASSWORD=güvenli_şifreniz_123
@@ -371,7 +371,7 @@ Yanlış: .next veya out
 **❌ Hata: "Command not found: npm"**
 ```
 Çözüm: Environment Variables'a ekleyin:
-NODE_VERSION=18.17.0
+NODE_VERSION=20.18.0
 ```
 
 **❌ Hata: "Module not found"**
