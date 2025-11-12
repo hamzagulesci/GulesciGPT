@@ -18,8 +18,13 @@ export async function addApiKey(key: string): Promise<ApiKey> {
     lastUsed: null,
   };
 
-  await setDb(`${API_KEY_PREFIX}${id}`, newKey);
-  return newKey;
+  try {
+    await setDb(`${API_KEY_PREFIX}${id}`, newKey);
+    return newKey;
+  } catch (e) {
+    console.error('KV yazma hatası:', e);
+    throw new Error('API key eklenemedi. KV storage erişilemiyor.');
+  }
 }
 
 // Kullanım için aktif bir API anahtarı alır.

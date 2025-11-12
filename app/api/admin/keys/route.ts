@@ -33,8 +33,11 @@ export async function POST(req: NextRequest) {
     const newKey = await addApiKey(key);
     await logAuditAction('add_key', `API key added: ${newKey.id}`);
     return NextResponse.json({ newKey });
-  } catch (error) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  } catch (error: any) {
+    console.error('API key add error:', error);
+    return NextResponse.json({ 
+      error: error.message || 'API key eklenemedi. KV storage kontrolü yapın.' 
+    }, { status: 500 });
   }
 }
 

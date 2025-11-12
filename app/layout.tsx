@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description: 'Okul çapında kullanılacak ücretsiz AI chat uygulaması - 47 AI modeli',
   keywords: 'AI, chat, öğrenci, okul, yapay zeka, GPT',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icon-512.png',
+    apple: '/icon-512.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

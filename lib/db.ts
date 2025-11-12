@@ -12,12 +12,14 @@ interface KVNamespace {
 // KV Namespace'i güvenli bir şekilde almak için yardımcı fonksiyon
 function getKvNamespace(): KVNamespace | null {
   try {
+    // Cloudflare Pages Edge runtime'da KV binding farklı yollarla erişilebilir
     // @ts-ignore: Cloudflare environment-specific binding
-    if (process.env.KV) {
+    const kv = (globalThis as any).env?.KV || process.env.KV || (globalThis as any).KV;
+    if (kv) {
       // @ts-ignore
-      return process.env.KV as KVNamespace;
+      return kv as KVNamespace;
     }
-    console.error('KV Namespace binding not found.');
+    console.error('KV Namespace binding not found. Make sure KV is bound in Cloudflare Pages settings.');
   } catch (e) {
     console.error('Failed to access KV Namespace:', e);
   }
@@ -41,12 +43,15 @@ export async function getDb<T>(key: string): Promise<T | null> {
 // Değerleri JSON olarak yazar
 export async function setDb<T>(key: string, value: T, expirationTtl?: number): Promise<void> {
   const kv = getKvNamespace();
-  if (!kv) return;
+  if (!kv) {
+    throw new Error('KV namespace not available. Check Cloudflare Pages KV binding configuration.');
+  }
 
   try {
     await kv.put(key, JSON.stringify(value), { expirationTtl });
   } catch (e) {
     console.error(`Failed to set key "${key}" in KV`, e);
+    throw new Error(`KV yazma hatası: ${e instanceof Error ? e.message : 'Bilinmeyen hata'}`);
   }
 }
 
