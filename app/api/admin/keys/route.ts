@@ -27,16 +27,31 @@ export async function POST(req: NextRequest) {
 
   try {
     const { key } = await req.json();
-    if (!key) {
+    if (!key || !key.trim()) {
       return NextResponse.json({ error: 'API key is required' }, { status: 400 });
     }
-    const newKey = await addApiKey(key);
+
+    const newKey = await addApiKey(key.trim());
+    
+    if (!newKey || !newKey.id) {
+      throw new Error('API key oluşturulamadı');
+    }
+
     await logAuditAction('add_key', `API key added: ${newKey.id}`);
     return NextResponse.json({ newKey });
   } catch (error: any) {
     console.error('API key add error:', error);
+    const errorMessage = error.message || 'API key eklenemedi';
+    
+    // KV hatası mı kontrol et
+    if (errorMessage.includes('KV') || errorMessage.includes('namespace')) {
+      return NextResponse.json({ 
+        error: 'KV storage erişilemiyor. Cloudflare Pages\'de KV binding kontrolü yapın: Settings → Functions → KV namespace bindings' 
+      }, { status: 500 });
+    }
+    
     return NextResponse.json({ 
-      error: error.message || 'API key eklenemedi. KV storage kontrolü yapın.' 
+      error: errorMessage 
     }, { status: 500 });
   }
 }

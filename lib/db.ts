@@ -13,13 +13,17 @@ interface KVNamespace {
 function getKvNamespace(): KVNamespace | null {
   try {
     // Cloudflare Pages Edge runtime'da KV binding farklı yollarla erişilebilir
+    // Next.js Edge runtime'da genellikle process.env.KV çalışır
     // @ts-ignore: Cloudflare environment-specific binding
-    const kv = (globalThis as any).env?.KV || process.env.KV || (globalThis as any).KV;
-    if (kv) {
+    const kv = process.env.KV || (globalThis as any).env?.KV || (globalThis as any).KV;
+    
+    if (kv && typeof kv.get === 'function' && typeof kv.put === 'function') {
       // @ts-ignore
       return kv as KVNamespace;
     }
-    console.error('KV Namespace binding not found. Make sure KV is bound in Cloudflare Pages settings.');
+    
+    console.error('KV Namespace binding not found or invalid. Available keys:', Object.keys(process.env).filter(k => k.includes('KV')));
+    console.error('Make sure KV is bound in Cloudflare Pages: Settings → Functions → KV namespace bindings');
   } catch (e) {
     console.error('Failed to access KV Namespace:', e);
   }
