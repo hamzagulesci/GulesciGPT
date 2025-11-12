@@ -23,13 +23,6 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 // Admin şifresini kontrol et (timing attack korumalı)
 export function verifyAdminPassword(password: string): boolean {
-  // Önce değiştirilmiş şifreyi kontrol et
-  const storedPassword = getStoredPassword()
-  if (storedPassword) {
-    return timingSafeEqual(password, storedPassword)
-  }
-
-  // Değiştirilmemişse env'den oku
   const adminPassword = process.env.ADMIN_PASSWORD;
 
   // Ortam değişkeni yoksa veya boşsa, şifre doğrulama başarısız olur.

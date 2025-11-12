@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
-import { addApiKey, listApiKeys, deleteApiKey, toggleApiKeyStatus } from '@/lib/keyManager';
+import { listApiKeys, addApiKey, deleteApiKey, toggleApiKeyStatus } from '@/lib/keyManager';
 import { logAuditAction } from '@/lib/auditLogger';
 
 export const runtime = 'edge';
@@ -14,82 +14,62 @@ async function authMiddleware(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const authError = await authMiddleware(req);
-  if (authError) return authError;
+  try {
+    const authError = await authMiddleware(req);
+    if (authError) return authError;
 
-  const keys = await listApiKeys();
-  return NextResponse.json({ keys });
+    const keys = await listApiKeys();
+    return NextResponse.json({ keys });
+  } catch (error: any) {
+    console.error('Error fetching keys:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch keys' }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const authError = await authMiddleware(req);
-  if (authError) return authError;
-
   try {
+    const authError = await authMiddleware(req);
+    if (authError) return authError;
+
     const { key } = await req.json();
-    if (!key || !key.trim()) {
-      return NextResponse.json({ error: 'API key is required' }, { status: 400 });
-    }
-
-    const newKey = await addApiKey(key.trim());
-    
-    if (!newKey || !newKey.id) {
-      throw new Error('API key oluşturulamadı');
-    }
-
-    await logAuditAction('add_key', `API key added: ${newKey.id}`);
-    return NextResponse.json({ newKey });
+    const newKey = await addApiKey(key);
+    await logAuditAction('add_key', `New key added: ${newKey.id}`);
+    return NextResponse.json({ success: true, key: newKey });
   } catch (error: any) {
-    console.error('API key add error:', error);
-    const errorMessage = error.message || 'API key eklenemedi';
-    
-    // KV hatası mı kontrol et
-    if (errorMessage.includes('KV') || errorMessage.includes('namespace')) {
-      return NextResponse.json({ 
-        error: 'KV storage erişilemiyor. Cloudflare Pages\'de KV binding kontrolü yapın: Settings → Functions → KV namespace bindings' 
-      }, { status: 500 });
-    }
-    
-    return NextResponse.json({ 
-      error: errorMessage 
-    }, { status: 500 });
+    console.error('Error adding key:', error);
+    return NextResponse.json({ error: error.message || 'Failed to add key' }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  const authError = await authMiddleware(req);
-  if (authError) return authError;
-
   try {
+    const authError = await authMiddleware(req);
+    if (authError) return authError;
+
     const { id } = await req.json();
-    if (!id) {
-      return NextResponse.json({ error: 'API key ID is required' }, { status: 400 });
-    }
     await deleteApiKey(id);
-    await logAuditAction('remove_key', `API key removed: ${id}`);
-    return new Response(null, { status: 204 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    await logAuditAction('remove_key', `Key removed: ${id}`);
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting key:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete key' }, { status: 500 });
   }
 }
 
 export async function PATCH(req: NextRequest) {
-  const authError = await authMiddleware(req);
-  if (authError) return authError;
-
   try {
+    const authError = await authMiddleware(req);
+    if (authError) return authError;
+
     const { id } = await req.json();
-    if (!id) {
-      return NextResponse.json({ error: 'API key ID is required' }, { status: 400 });
-    }
     const updatedKey = await toggleApiKeyStatus(id);
     if (updatedKey) {
-      await logAuditAction('toggle_key', `API key ${id} status toggled to ${updatedKey.isActive}`);
-      return NextResponse.json({ updatedKey });
-    } else {
-      return NextResponse.json({ error: 'API key not found' }, { status: 404 });
+      await logAuditAction('toggle_key', `Key ${id} status toggled to ${updatedKey.isActive}`);
+      return NextResponse.json({ success: true, key: updatedKey });
     }
-  } catch (error) {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    return NextResponse.json({ error: 'Key not found' }, { status: 404 });
+  } catch (error: any) {
+    console.error('Error updating key:', error);
+    return NextResponse.json({ error: error.message || 'Failed to update key' }, { status: 500 });
   }
 }
