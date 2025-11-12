@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { KeyManagementTab } from './KeyManagementTab'
 import { StatsTab } from './StatsTab'
+import { ErrorsTab } from './ErrorsTab'
 import { SystemStatusTab } from './SystemStatusTab'
 import { SettingsTab } from './SettingsTab'
-import { ErrorsTab } from './ErrorsTab'
 import { TokensTab } from './TokensTab'
 import { AuditTab } from './AuditTab'
 
@@ -43,182 +45,119 @@ export function AdminDashboard() {
   const [statsData, setStatsData] = useState<StatsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const fetchKeys = async () => {
-    try {
-      const response = await fetch('/api/admin/keys')
+  const fetchAllData = async () => {
+    const token = localStorage.getItem('jwt')
+    if (!token) {
+      toast.error('Yetkilendirme tokeni bulunamadı. Lütfen tekrar giriş yapın.')
+      setIsLoading(false)
+      return
+    }
 
-      if (!response.ok) {
-        throw new Error('API key getirme başarısız')
+    try {
+      const headers = { Authorization: `Bearer ${token}` }
+      const [keysRes, statsRes] = await Promise.all([
+        fetch('/api/admin/keys', { headers }),
+        fetch('/api/admin/stats', { headers }),
+      ])
+
+      if (keysRes.ok) {
+        const keysData = await keysRes.json()
+        setKeys(keysData.keys)
+      } else {
+        toast.error('API key getirme başarısız')
       }
 
-      const data = await response.json()
-      setKeys(data.keys)
-    } catch (error: any) {
-      toast.error(error.message || 'Veri yüklenemedi')
-    }
-  }
-
-  const fetchStats = async () => {
-    try {
-      const response = await fetch('/api/admin/stats')
-
-      if (!response.ok) {
-        throw new Error('İstatistik getirme başarısız')
+      if (statsRes.ok) {
+        const statsData = await statsRes.json()
+        setStatsData(statsData)
+      } else {
+        toast.error('İstatistik getirme başarısız')
       }
-
-      const data = await response.json()
-      setStatsData(data)
     } catch (error: any) {
-      toast.error(error.message || 'Veri yüklenemedi')
+      toast.error(error.message || 'Veri alınırken bir hata oluştu')
+    } finally {
+      setIsLoading(false)
     }
-  }
-
-  const refreshData = async () => {
-    setIsLoading(true)
-    await Promise.all([fetchKeys(), fetchStats()])
-    setIsLoading(false)
   }
 
   useEffect(() => {
-    refreshData()
-
-    // Her 30 saniyede bir otomatik yenile
-    const interval = setInterval(fetchStats, 30000)
-
-    return () => clearInterval(interval)
+    fetchAllData() // Initial fetch
+    const interval = setInterval(fetchAllData, 30000) // Refresh every 30 seconds
+    return () => clearInterval(interval) // Cleanup on unmount
   }, [])
 
-  if (isLoading || !statsData) {
+  if (isLoading) {
     return (
-      <div
-        className="flex items-center justify-center h-screen"
-        style={{ background: 'var(--bg-primary)' }}
-      >
-        <div className="text-center">
-          <div
-            className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
-            style={{ borderColor: 'var(--color-action)' }}
-          />
-          <p style={{ color: 'var(--text-tertiary)' }}>Yükleniyor...</p>
+      <div className="flex items-center justify-center h-screen" style={{ background: 'var(--bg-primary)' }}>
+        <div className="flex flex-col items-center space-y-2">
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: 'var(--text-primary)' }} />
+          <p style={{ color: 'var(--text-secondary)' }}>Veriler yükleniyor...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div
-      className="container mx-auto p-3 md:p-6 min-h-screen"
-      style={{ background: 'var(--bg-primary)' }}
-    >
-      <div className="mb-4 md:mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
-          HamzaGPT Admin
-        </h1>
-        <p className="mt-1 text-sm md:text-base" style={{ color: 'var(--text-tertiary)' }}>
-          Sistem yönetimi
-        </p>
-      </div>
-
-      <Tabs defaultValue="keys" className="w-full">
-        <div className="overflow-x-auto pb-2">
-          <TabsList
-            className="inline-flex w-auto md:grid md:w-full md:grid-cols-4 xl:grid-cols-7 md:max-w-5xl gap-2"
+    <div className="min-h-screen p-4 md:p-6" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      <div className="max-w-7xl mx-auto">
+        <header className="flex justify-between items-center mb-4 md:mb-6">
+          <h1 className="text-xl md:text-2xl font-bold">Yönetim Paneli</h1>
+          <Button
+            variant="outline"
+            onClick={() => {
+              localStorage.removeItem('jwt')
+              window.location.href = '/login'
+            }}
             style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)'
+              background: 'transparent',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-color)',
             }}
           >
-          <TabsTrigger
-            value="keys"
-            className="text-xs md:text-sm px-2 md:px-4"
-            style={{ color: 'var(--text-secondary)' }}
-            aria-label="API Key yönetimi"
-          >
-            Keys
-          </TabsTrigger>
-          <TabsTrigger
-            value="stats"
-            className="text-xs md:text-sm px-2 md:px-4"
-            style={{ color: 'var(--text-secondary)' }}
-            aria-label="İstatistikler"
-          >
-            Stats
-          </TabsTrigger>
-          <TabsTrigger
-            value="system"
-            className="text-xs md:text-sm px-2 md:px-4"
-            style={{ color: 'var(--text-secondary)' }}
-            aria-label="Sistem durumu"
-          >
-            Sistem
-          </TabsTrigger>
-          <TabsTrigger
-            value="settings"
-            className="text-xs md:text-sm px-2 md:px-4"
-            style={{ color: 'var(--text-secondary)' }}
-            aria-label="Ayarlar"
-          >
-            Ayarlar
-          </TabsTrigger>
-          <TabsTrigger
-            value="errors"
-            className="text-xs md:text-sm px-2 md:px-4"
-            style={{ color: 'var(--text-secondary)' }}
-            aria-label="Hata Logları"
-          >
-            Hatalar
-          </TabsTrigger>
-          <TabsTrigger
-            value="tokens"
-            className="text-xs md:text-sm px-2 md:px-4"
-            style={{ color: 'var(--text-secondary)' }}
-            aria-label="Token İstatistikleri"
-          >
-            Tokenler
-          </TabsTrigger>
-          <TabsTrigger
-            value="audit"
-            className="text-xs md:text-sm px-2 md:px-4"
-            style={{ color: 'var(--text-secondary)' }}
-            aria-label="Audit Logları"
-          >
-            Audit
-          </TabsTrigger>
+            Çıkış Yap
+          </Button>
+        </header>
+
+        <Tabs defaultValue="stats" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 mb-4">
+            <TabsTrigger value="stats">İstatistikler</TabsTrigger>
+            <TabsTrigger value="keys">API Keys</TabsTrigger>
+            <TabsTrigger value="errors">Hatalar</TabsTrigger>
+            <TabsTrigger value="system">Sistem</TabsTrigger>
+            <TabsTrigger value="settings">Ayarlar</TabsTrigger>
+            <TabsTrigger value="tokens">Tokenler</TabsTrigger>
+            <TabsTrigger value="audit">Audit</TabsTrigger>
           </TabsList>
-        </div>
 
-        <TabsContent value="keys" className="mt-3 md:mt-6">
-          <KeyManagementTab keys={keys} onRefresh={refreshData} />
-        </TabsContent>
+          <TabsContent value="stats">
+            {statsData ? <StatsTab data={statsData} /> : <p>İstatistikler yüklenemedi.</p>}
+          </TabsContent>
 
-        <TabsContent value="stats" className="mt-3 md:mt-6">
-          <StatsTab data={statsData} />
-        </TabsContent>
+          <TabsContent value="keys">
+            <KeyManagementTab keys={keys} onRefresh={fetchAllData} />
+          </TabsContent>
 
-        <TabsContent value="system" className="mt-3 md:mt-6">
-          <SystemStatusTab
-            stats={statsData.stats}
-            keyStats={statsData.keyStats}
-            onRefresh={refreshData}
-          />
-        </TabsContent>
+          <TabsContent value="errors">
+            <ErrorsTab />
+          </TabsContent>
 
-        <TabsContent value="settings" className="mt-3 md:mt-6">
-          <SettingsTab />
-        </TabsContent>
+          <TabsContent value="system">
+            {statsData ? <SystemStatusTab stats={statsData.stats} keyStats={statsData.keyStats} onRefresh={fetchAllData} /> : <p>Sistem durumu yüklenemedi.</p>}
+          </TabsContent>
 
-        <TabsContent value="errors" className="mt-3 md:mt-6">
-          <ErrorsTab />
-        </TabsContent>
+          <TabsContent value="settings">
+            <SettingsTab />
+          </TabsContent>
 
-        <TabsContent value="tokens" className="mt-3 md:mt-6">
-          <TokensTab />
-        </TabsContent>
+          <TabsContent value="tokens">
+            <TokensTab />
+          </TabsContent>
 
-        <TabsContent value="audit" className="mt-3 md:mt-6">
-          <AuditTab />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="audit">
+            <AuditTab />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }

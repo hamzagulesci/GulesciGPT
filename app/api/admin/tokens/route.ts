@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken } from '@/lib/auth'
+import { verifyToken } from '@/lib/jwt';
 import { getTokenStats } from '@/lib/tokenTracker'
 
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
-// Admin auth kontrolü
 async function checkAuth(request: NextRequest) {
-  const token = request.cookies.get('admin_token')?.value
+  const authHeader = request.headers.get('Authorization');
+  const token = authHeader?.split(' ')[1];
 
   if (!token) {
-    return null
+    return null;
   }
 
-  const payload = await verifyToken(token)
-  return payload
+  return await verifyToken(token);
 }
 
 // GET: Token istatistiklerini getir
