@@ -43,6 +43,16 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
   const [newKey, setNewKey] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  const fetchWithAuth = async (url: string, options: RequestInit) => {
+    const token = localStorage.getItem('jwt');
+    const headers = {
+      ...options.headers,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+    return fetch(url, { ...options, headers });
+  };
+
   const handleAddKey = async () => {
     if (!newKey.trim()) {
       toast.error('API key gerekli')
@@ -52,11 +62,10 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/admin/keys', {
+      const response = await fetchWithAuth('/api/admin/keys', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key: newKey }),
-      })
+      });
 
       const data = await response.json()
 
@@ -81,11 +90,10 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
     }
 
     try {
-      const response = await fetch('/api/admin/keys', {
+      const response = await fetchWithAuth('/api/admin/keys', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyId }),
-      })
+        body: JSON.stringify({ id: keyId }), // Corrected to 'id' to match API
+      });
 
       const data = await response.json()
 
@@ -102,11 +110,10 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
 
   const handleToggleStatus = async (keyId: string, isActive: boolean) => {
     try {
-      const response = await fetch('/api/admin/keys', {
+      const response = await fetchWithAuth('/api/admin/keys', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyId, isActive: !isActive }),
-      })
+        body: JSON.stringify({ id: keyId }), // Corrected to 'id' to match API
+      });
 
       const data = await response.json()
 
