@@ -37,6 +37,11 @@ export default function LoginPage() {
         return
       }
 
+      // Başarılı login'de JWT'yi kaydet
+      if (data.token) {
+        localStorage.setItem('jwt', data.token)
+      }
+
       toast.success('Giriş başarılı!')
       router.push('/admin')
     } catch (error) {
