@@ -1,4 +1,4 @@
-import { getStoredPassword } from './passwordManager'
+import { getRequestContext } from '@cloudflare/next-on-pages'
 
 // Re-export JWT functions from jwt.ts (for backward compatibility)
 export { createToken, verifyToken } from './jwt'
@@ -23,7 +23,16 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 // Admin şifresini kontrol et (timing attack korumalı)
 export function verifyAdminPassword(password: string): boolean {
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  // Prefer runtime binding on Cloudflare Pages
+  let adminPassword: string | undefined
+  try {
+    adminPassword = (getRequestContext().env as any)?.ADMIN_PASSWORD as string | undefined
+  } catch {
+    // getRequestContext not available locally; fall back to process.env
+  }
+  if (!adminPassword) {
+    adminPassword = process.env.ADMIN_PASSWORD
+  }
 
   // Ortam değişkeni yoksa veya boşsa, şifre doğrulama başarısız olur.
   if (!adminPassword) {

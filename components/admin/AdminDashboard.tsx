@@ -56,12 +56,10 @@ export function AdminDashboard() {
   const fetchKeys = async () => {
     try {
       const response = await fetchWithAuth('/api/admin/keys');
-
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error('API key getirme başarısız')
+        throw new Error(data?.error || 'API key getirme başarısız');
       }
-
-      const data = await response.json()
       setKeys(data.keys)
     } catch (error: any) {
       toast.error(error.message || 'Veri yüklenemedi')
@@ -71,12 +69,10 @@ export function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const response = await fetchWithAuth('/api/admin/stats');
-
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error('İstatistik getirme başarısız')
+        throw new Error(data?.error || 'İstatistik getirme başarısız');
       }
-
-      const data = await response.json()
       setStatsData(data)
     } catch (error: any) {
       toast.error(error.message || 'Veri yüklenemedi')
