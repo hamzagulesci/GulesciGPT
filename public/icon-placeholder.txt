@@ -1,0 +1,26 @@
+# PWA Icon Placeholder
+
+PWA desteği için aşağıdaki icon dosyalarını oluşturmanız gerekiyor:
+
+## Gerekli İcon'lar:
+1. icon-192.png (192x192px) - Android için standart boyut
+2. icon-512.png (512x512px) - Android için büyük boyut
+
+## İcon Tasarım Önerileri:
+- Arka plan: #0A0A0A (koyu siyah) veya #1E90FF (mavi)
+- Logo/İsim: Merkeze yerleştirilmiş "G" harfi veya "GulesciGPT" logosu
+- Stil: Modern, minimal, yuvarlak köşeli
+- Format: PNG (şeffaf arka plan olabilir)
+
+## Hızlı Oluşturma:
+1. Canva.com veya Figma kullanarak tasarlayın
+2. Veya https://realfavicongenerator.net/ kullanarak otomatik oluşturun
+3. Oluşan dosyaları /public/ klasörüne koyun:
+   - public/icon-192.png
+   - public/icon-512.png
+
+## Test:
+PWA'yı test etmek için:
+1. Chrome DevTools > Application > Manifest
+2. "Add to home screen" testini yapın
+3. Lighthouse PWA audit'i çalıştırın
