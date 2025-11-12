@@ -30,16 +30,12 @@ export function verifyAdminPassword(password: string): boolean {
   }
 
   // Değiştirilmemişse env'den oku
-  const adminPassword = process.env.ADMIN_PASSWORD
+  const adminPassword = process.env.ADMIN_PASSWORD;
 
-  // Production'da şifre zorunlu
-  if (!adminPassword || adminPassword === 'admin123') {
-    console.error('⚠️ GÜVENLİK UYARISI: ADMIN_PASSWORD çevresel değişkeni ayarlanmamış veya varsayılan değerde!')
-    if (process.env.NODE_ENV === 'production') {
-      return false
-    }
+  if (!adminPassword) {
+    console.error('⚠️ GÜVENLİK UYARISI: ADMIN_PASSWORD çevresel değişkeni ayarlanmamış!');
+    return false;
   }
 
-  // Timing-safe karşılaştırma
-  return timingSafeEqual(password, adminPassword || 'admin123')
+  return timingSafeEqual(password, adminPassword);
 }
