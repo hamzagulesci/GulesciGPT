@@ -12,6 +12,10 @@ export function checkRateLimit(
   maxAttempts: number = 5,
   windowMs: number = 15 * 60 * 1000 // 15 dakika
 ): { allowed: boolean; remaining: number; resetAt: number } {
+  if (process.env.NODE_ENV === 'development') {
+    return { allowed: true, remaining: maxAttempts, resetAt: Date.now() + windowMs };
+  }
+
   const now = Date.now()
   const entry = rateLimitStore.get(identifier)
 
@@ -55,12 +59,3 @@ export function resetRateLimit(identifier: string): void {
   rateLimitStore.delete(identifier)
 }
 
-// Temizleme: Her 1 saatte bir eski kayıtları sil
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (now > entry.resetAt) {
-      rateLimitStore.delete(key)
-    }
-  }
-}, 60 * 60 * 1000) // 1 saat

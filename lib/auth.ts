@@ -32,10 +32,12 @@ export function verifyAdminPassword(password: string): boolean {
   // Değiştirilmemişse env'den oku
   const adminPassword = process.env.ADMIN_PASSWORD;
 
+  // Ortam değişkeni yoksa veya boşsa, şifre doğrulama başarısız olur.
   if (!adminPassword) {
-    console.error('⚠️ GÜVENLİK UYARISI: ADMIN_PASSWORD çevresel değişkeni ayarlanmamış!');
+    console.error('CRITICAL: ADMIN_PASSWORD environment variable is not set.');
     return false;
   }
 
+  // Timing-safe karşılaştırma ile şifreyi doğrula
   return timingSafeEqual(password, adminPassword);
 }
