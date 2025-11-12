@@ -16,10 +16,14 @@ async function deriveKey(secret: string, salt: Uint8Array): Promise<CryptoKey> {
     ['deriveKey']
   );
 
+  // Explicitly create a new ArrayBuffer to ensure type compatibility.
+  const saltArrayBuffer = new ArrayBuffer(salt.byteLength);
+  new Uint8Array(saltArrayBuffer).set(salt);
+
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: salt,
+      salt: saltArrayBuffer,
       iterations: 100000,
       hash: 'SHA-256',
     },
@@ -60,7 +64,7 @@ export async function encrypt(data: string): Promise<string> {
     combined.set(new Uint8Array(encryptedData), salt.length + iv.length);
 
     // Convert to a string representation (e.g., base64)
-    return Buffer.from(combined).toString('base64');
+    return btoa(String.fromCharCode.apply(null, Array.from(combined)));
   } catch (error) {
     console.error('Server-side encryption failed:', error);
     return data; // Fallback to unencrypted data on failure
@@ -76,7 +80,11 @@ export async function decrypt(encryptedData: string): Promise<string> {
   }
 
   try {
-    const combined = Buffer.from(encryptedData, 'base64');
+    const combinedBinaryStr = atob(encryptedData);
+    const combined = new Uint8Array(combinedBinaryStr.length);
+    for (let i = 0; i < combinedBinaryStr.length; i++) {
+      combined[i] = combinedBinaryStr.charCodeAt(i);
+    }
 
     const salt = combined.slice(0, SALT_LENGTH);
     const iv = combined.slice(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
