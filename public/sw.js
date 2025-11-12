@@ -39,46 +39,36 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// Fetch event - Network First stratejisi
+// Fetch event - Network First stratejisi, hatalara karşı daha dayanıklı
 self.addEventListener('fetch', (event) => {
-  // Sadece GET isteklerini cache'le
-  if (event.request.method !== 'GET') {
-    return
+  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+    return;
   }
 
-  // API isteklerini cache'leme
-  if (event.request.url.includes('/api/')) {
-    event.respondWith(fetch(event.request))
-    return
-  }
-
-  // Network First stratejisi
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Başarılı response'u cache'e ekle
-        if (response.status === 200) {
-          const responseToCache = response.clone()
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache)
-          })
+    caches.open(CACHE_NAME).then(async (cache) => {
+      try {
+        const response = await fetch(event.request);
+        // Sadece başarılı ve temel istekleri cache'le
+        if (response.ok && response.type === 'basic') {
+          cache.put(event.request, response.clone());
         }
-        return response
-      })
-      .catch(() => {
-        // Network başarısızsa cache'den dön
-        return caches.match(event.request).then((response) => {
-          if (response) {
-            return response
-          }
-          // Offline sayfasını göster
-          if (event.request.mode === 'navigate') {
-            return caches.match(OFFLINE_URL)
-          }
-        })
-      })
-  )
-})
+        return response;
+      } catch (error) {
+        console.log('[SW] Network request failed, trying cache:', event.request.url);
+        const cachedResponse = await cache.match(event.request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        if (event.request.mode === 'navigate') {
+          return await cache.match(OFFLINE_URL);
+        }
+        // Return a basic error response for other failed assets
+        return new Response('Network error', { status: 408, headers: { 'Content-Type': 'text/plain' } });
+      }
+    })
+  );
+});
 
 // Background Sync - Offline mesajları gönder
 self.addEventListener('sync', (event) => {

@@ -1,103 +1,59 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/jwt';
+import { getStats, getMessageTrend, getTopModels, resetStats } from '@/lib/statsManager';
+import { listApiKeys } from '@/lib/keyManager';
+import { ApiKey } from '@/lib/keyManager'; // Import the interface
+
 export const runtime = 'edge';
-import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken } from '@/lib/auth'
-import { getStats, getMessageTrend, getTopModels, getTodayMessageCount, resetStats } from '@/lib/statsManager'
-import { getAllKeys } from '@/lib/keyManager'
-import { getActiveUserCount, getSessionStats } from '@/lib/sessionManager'
 
-// Middleware: Admin auth kontrolü
-async function checkAuth(request: NextRequest) {
-  const token = request.cookies.get('admin_token')?.value
-
-  if (!token) {
-    return null
+async function authMiddleware(req: NextRequest) {
+  const token = req.headers.get('Authorization')?.split(' ')[1];
+  if (!token || !await verifyToken(token)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const payload = await verifyToken(token)
-  return payload
+  return null;
 }
 
-// GET: İstatistikleri getir
-export async function GET(request: NextRequest) {
-  const auth = await checkAuth(request)
-
-  if (!auth) {
-    return NextResponse.json(
-      { error: 'Yetkisiz erişim' },
-      { status: 401 }
-    )
-  }
+export async function GET(req: NextRequest) {
+  const authError = await authMiddleware(req);
+  if (authError) return authError;
 
   try {
-    const stats = getStats()
-    const todayMessages = getTodayMessageCount()
-    const messageTrend = getMessageTrend(7) // Son 7 gün
-    const topModels = getTopModels(10) // Top 10 model
+    const [stats, messageTrend, topModels, allKeys] = await Promise.all([
+      getStats(),
+      getMessageTrend(7),
+      getTopModels(5),
+      listApiKeys()
+    ]);
 
-    // Aktif/pasif key sayısı
-    const keys = getAllKeys()
-    const activeKeyCount = keys.filter(k => k.isActive).length
-    const inactiveKeyCount = keys.filter(k => !k.isActive).length
+    const keyStats = {
+      active: allKeys.filter((k: ApiKey) => k.isActive).length,
+      inactive: allKeys.filter((k: ApiKey) => !k.isActive).length,
+      total: allKeys.length
+    };
 
-    // Aktif kullanıcı sayısı ve session istatistikleri
-    const activeUsers = getActiveUserCount()
-    const sessionStats = getSessionStats()
-
-    return NextResponse.json({
-      stats: {
-        totalMessages: stats.totalMessages,
-        totalChats: stats.totalChats,
-        todayMessages,
-        averageResponseTime: stats.averageResponseTime,
-        lastUpdated: stats.lastUpdated,
-        activeUsers
-      },
-      messageTrend,
-      topModels,
-      keyStats: {
-        active: activeKeyCount,
-        inactive: inactiveKeyCount,
-        total: keys.length
-      },
-      sessionStats
-    })
+    return NextResponse.json({ stats, messageTrend, topModels, keyStats });
   } catch (error) {
-    console.error('Stats getirme hatası:', error)
-    return NextResponse.json(
-      { error: 'Sunucu hatası' },
-      { status: 500 }
-    )
+    console.error('Error fetching stats:', error);
+    return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
   }
 }
 
-// POST: İstatistikleri sıfırla
 export async function POST(request: NextRequest) {
-  const auth = await checkAuth(request)
-
-  if (!auth) {
-    return NextResponse.json(
-      { error: 'Yetkisiz erişim' },
-      { status: 401 }
-    )
-  }
+  const authError = await authMiddleware(request);
+  if (authError) return authError;
 
   try {
-    const { action } = await request.json()
+    const { action } = await request.json();
 
     if (action === 'reset') {
-      await resetStats()
-      return NextResponse.json({ success: true, message: 'İstatistikler sıfırlandı' })
+      await resetStats();
+      return NextResponse.json({ success: true, message: 'Statistics have been reset.' });
     }
 
-    return NextResponse.json(
-      { error: 'Geçersiz aksiyon' },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
-    console.error('Stats sıfırlama hatası:', error)
-    return NextResponse.json(
-      { error: 'Sunucu hatası' },
-      { status: 500 }
-    )
+    console.error('Error resetting stats:', error);
+    return NextResponse.json({ error: 'Failed to reset stats' }, { status: 500 });
   }
 }

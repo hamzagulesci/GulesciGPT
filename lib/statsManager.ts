@@ -1,136 +1,120 @@
+import { getDb, setDb } from './db';
 
-// In-memory store for stats in an Edge environment
-let stats: Stats = {
+const STATS_KEY = 'app_stats';
+
+// İstatistik verileri için arayüz
+export interface StatsData {
+  totalMessages: number;
+  totalChats: number;
+  messagesByDate: Record<string, number>;
+  messagesByModel: Record<string, number>;
+  lastUpdated: string | null;
+  activeUsers: number; // Son 5 dakika içinde aktif olan kullanıcılar
+  averageResponseTime: number;
+}
+
+// Başlangıç istatistik verisi
+const initialStats: StatsData = {
   totalMessages: 0,
   totalChats: 0,
   messagesByDate: {},
   messagesByModel: {},
   lastUpdated: null,
+  activeUsers: 0,
   averageResponseTime: 0,
-  responseTimes: []
 };
 
-export interface Stats {
-  totalMessages: number
-  totalChats: number
-  messagesByDate: Record<string, number>
-  messagesByModel: Record<string, number>
-  lastUpdated: string | null
-  averageResponseTime: number
-  responseTimes: number[]
+// İstatistikleri KV'den al
+async function getStatsFromDb(): Promise<StatsData> {
+  const stats = await getDb<StatsData>(STATS_KEY);
+  return stats || initialStats;
 }
 
-// Data klasörünü oluştur (yoksa)
-// In-memory functions for an Edge environment
-function readStats(): Stats {
-  return stats;
-}
-
-async function writeStats(newStats: Stats): Promise<void> {
-  stats = newStats;
-  return Promise.resolve();
+// İstatistikleri KV'ye kaydet
+async function persistStats(stats: StatsData): Promise<void> {
+  stats.lastUpdated = new Date().toISOString();
+  await setDb(STATS_KEY, stats);
 }
 
 // Mesaj sayısını artır
 export async function incrementMessageCount(model: string): Promise<void> {
-  const stats = readStats()
+  const stats = await getStatsFromDb();
+  const today = new Date().toISOString().split('T')[0];
 
-  stats.totalMessages += 1
+  stats.totalMessages++;
+  stats.messagesByDate[today] = (stats.messagesByDate[today] || 0) + 1;
+  stats.messagesByModel[model] = (stats.messagesByModel[model] || 0) + 1;
 
-  // Bugünün tarihi (YYYY-MM-DD formatında)
-  const today = new Date().toISOString().split('T')[0]
-  stats.messagesByDate[today] = (stats.messagesByDate[today] || 0) + 1
-
-  // Model bazlı istatistik
-  stats.messagesByModel[model] = (stats.messagesByModel[model] || 0) + 1
-
-  stats.lastUpdated = new Date().toISOString()
-
-  await writeStats(stats)
+  await persistStats(stats);
 }
 
-// Yeni chat sayısını artır
+// Sohbet sayısını artır
 export async function incrementChatCount(): Promise<void> {
-  const stats = readStats()
-  stats.totalChats += 1
-  stats.lastUpdated = new Date().toISOString()
-  await writeStats(stats)
+  const stats = await getStatsFromDb();
+  stats.totalChats++;
+  await persistStats(stats);
 }
 
-// Yanıt süresini ekle (rolling average - son 100 yanıt)
-export async function addResponseTime(ms: number): Promise<void> {
-  const stats = readStats()
-
-  stats.responseTimes.push(ms)
-
-  // Son 100 yanıt süresini tut
-  if (stats.responseTimes.length > 100) {
-    stats.responseTimes = stats.responseTimes.slice(-100)
-  }
-
-  // Ortalama hesapla
-  const sum = stats.responseTimes.reduce((a, b) => a + b, 0)
-  stats.averageResponseTime = Math.round(sum / stats.responseTimes.length)
-
-  stats.lastUpdated = new Date().toISOString()
-
-  await writeStats(stats)
+// Aktif kullanıcı sayısını güncelle
+export async function setActiveUsers(count: number): Promise<void> {
+  const stats = await getStatsFromDb();
+  stats.activeUsers = count;
+  await persistStats(stats);
 }
 
 // Tüm istatistikleri al
-export function getStats(): Stats {
-  return readStats()
+export async function getStats(): Promise<StatsData> {
+  return await getStatsFromDb();
+}
+
+// Ortalama yanıt süresini ve toplam yanıtları günceller
+export async function addResponseTime(newTime: number): Promise<void> {
+  const stats = await getStatsFromDb();
+  const total = stats.totalMessages; // Use total messages as the count of responses
+  
+  // Prevent division by zero if it's the first message
+  if (total > 0) {
+    stats.averageResponseTime =
+      (stats.averageResponseTime * (total - 1) + newTime) / total;
+  } else {
+    stats.averageResponseTime = newTime;
+  }
+  
+  await persistStats(stats);
 }
 
 // Son N gün mesaj trendini al
-export function getMessageTrend(days: number = 7): { date: string; count: number }[] {
-  const stats = readStats()
-  const result: { date: string; count: number }[] = []
+export async function getMessageTrend(days: number = 7): Promise<{ date: string; count: number }[]> {
+  const stats = await getStatsFromDb();
+  const result: { date: string; count: number }[] = [];
 
   for (let i = days - 1; i >= 0; i--) {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
 
     result.push({
       date: dateStr,
-      count: stats.messagesByDate[dateStr] || 0
-    })
+      count: stats.messagesByDate[dateStr] || 0,
+    });
   }
 
-  return result
+  return result;
 }
 
 // Model kullanım sıralamasını al (top N)
-export function getTopModels(limit: number = 10): { model: string; count: number }[] {
-  const stats = readStats()
-
+export async function getTopModels(limit: number = 10): Promise<{ model: string; count: number }[]> {
+  const stats = await getStatsFromDb();
+  
   const modelArray = Object.entries(stats.messagesByModel)
     .map(([model, count]) => ({ model, count }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, limit)
+    .slice(0, limit);
 
-  return modelArray
+  return modelArray;
 }
 
 // Tüm istatistikleri sıfırla (tehlikeli işlem)
 export async function resetStats(): Promise<void> {
-  const initialStats: Stats = {
-    totalMessages: 0,
-    totalChats: 0,
-    messagesByDate: {},
-    messagesByModel: {},
-    lastUpdated: new Date().toISOString(),
-    averageResponseTime: 0,
-    responseTimes: []
-  }
-
-  await writeStats(initialStats)
-}
-
-// Bugün atılan mesaj sayısı
-export function getTodayMessageCount(): number {
-  const stats = readStats()
-  const today = new Date().toISOString().split('T')[0]
-  return stats.messagesByDate[today] || 0
+  await setDb(STATS_KEY, initialStats);
 }

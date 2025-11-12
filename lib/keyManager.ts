@@ -1,114 +1,119 @@
-import { v4 as uuidv4 } from 'uuid'
+import { encrypt, decrypt } from './server-encryption';
+import { getDb, setDb, listDb, deleteDb } from './db';
 
-// In-memory store for API keys in an Edge environment
-let keys: ApiKey[] = []
+// KV'de anahtarları saklamak için kullanılacak önek.
+const API_KEY_PREFIX = 'apiKey:';
 
-export interface ApiKey {
-  id: string
-  key: string
-  isActive: boolean
-  usageCount: number
-  addedAt: string
-  lastUsed: string | null
-}
+// Sisteme yeni bir API anahtarı ekler.
+export async function addApiKey(key: string): Promise<ApiKey> {
+  if (!key.trim()) throw new Error('API key cannot be empty');
 
-// Data klasörünü oluştur (yoksa)
-// In-memory functions for an Edge environment
-function readKeys(): ApiKey[] {
-  return keys
-}
-
-async function writeKeys(newKeys: ApiKey[]): Promise<void> {
-  keys = newKeys
-  return Promise.resolve()
-}
-
-// Aktif key al
-export function getActiveKey(): ApiKey | null {
-  const keys = readKeys()
-  const activeKey = keys.find(k => k.isActive)
-  return activeKey || null
-}
-
-// Key'i başarısız olarak işaretle ve pasif yap
-export async function markKeyAsFailed(keyId: string): Promise<void> {
-  const keys = readKeys()
-  const keyIndex = keys.findIndex(k => k.id === keyId)
-
-  if (keyIndex !== -1) {
-    keys[keyIndex].isActive = false
-    keys[keyIndex].usageCount += 1
-    keys[keyIndex].lastUsed = new Date().toISOString()
-    await writeKeys(keys)
-  }
-}
-
-// Bir sonraki aktif key'e geç
-export function rotateToNextKey(): ApiKey | null {
-  const keys = readKeys()
-  const nextActiveKey = keys.find(k => k.isActive)
-  return nextActiveKey || null
-}
-
-// Yeni key ekle
-export async function addKey(newKey: string): Promise<ApiKey> {
-  const keys = readKeys()
-
-  const keyObj: ApiKey = {
-    id: uuidv4(),
-    key: newKey,
+  const id = crypto.randomUUID();
+  const newKey: ApiKey = {
+    id,
+    key: await encrypt(key), // Anahtarı şifreleyerek sakla
     isActive: true,
     usageCount: 0,
     addedAt: new Date().toISOString(),
-    lastUsed: null
-  }
+    lastUsed: null,
+  };
 
-  keys.push(keyObj)
-  await writeKeys(keys)
-
-  return keyObj
+  await setDb(`${API_KEY_PREFIX}${id}`, newKey);
+  return newKey;
 }
 
-// Key sil
-export async function deleteKey(keyId: string): Promise<boolean> {
-  const keys = readKeys()
-  const filteredKeys = keys.filter(k => k.id !== keyId)
+// Kullanım için aktif bir API anahtarı alır.
+// En az kullanılmış olanı seçer ve kullanım sayacını artırır.
+export async function getActiveApiKey(): Promise<{ id: string; key: string } | null> {
+  const allKeys = await getAllApiKeys(true); // Get raw keys
+  const activeKeys = allKeys.filter(k => k.isActive);
 
-  if (filteredKeys.length === keys.length) {
-    return false // Key bulunamadı
-  }
+  if (activeKeys.length === 0) return null;
 
-  await writeKeys(filteredKeys)
-  return true
+  const keyToUse = activeKeys.reduce((prev, curr) =>
+    prev.usageCount < curr.usageCount ? prev : curr
+  );
+
+  // Do not increment usage here, the caller will do it after a successful request
+  const decryptedKey = await decrypt(keyToUse.key);
+
+  return { id: keyToUse.id, key: decryptedKey };
 }
 
-// Tüm key'leri al (admin dashboard için)
-export function getAllKeys(): ApiKey[] {
-  return readKeys()
+// Görüntüleme için tüm API anahtarlarını listeler (anahtar kısaltılmış).
+export async function listApiKeys(): Promise<ApiKey[]> {
+    const allKeys = await getAllApiKeys();
+    // Güvenlik için, listelerken anahtarın sadece bir kısmını göster
+    return Promise.all(allKeys.map(async (k) => ({
+      ...k,
+      key: `${(await decrypt(k.key)).substring(0, 4)}...`
+    })));
 }
 
-// Key'i aktif/pasif yap
-export async function toggleKeyStatus(keyId: string, isActive: boolean): Promise<boolean> {
-  const keys = readKeys()
-  const keyIndex = keys.findIndex(k => k.id === keyId)
-
-  if (keyIndex === -1) {
-    return false
-  }
-
-  keys[keyIndex].isActive = isActive
-  await writeKeys(keys)
-  return true
+// Dahili kullanım için tüm API anahtarlarını tam olarak alır.
+// Dahili kullanım için tüm API anahtarlarını tam olarak alır.
+async function getAllApiKeys(raw: boolean = false): Promise<ApiKey[]> {
+    const keyFiles = await listDb(API_KEY_PREFIX);
+    const keys: ApiKey[] = [];
+    for (const keyFile of keyFiles) {
+      const keyData = await getDb<ApiKey>(keyFile.name);
+      if (keyData) {
+        keys.push(keyData);
+      }
+    }
+    return keys;
 }
 
-// Key kullanımını güncelle
-export async function updateKeyUsage(keyId: string): Promise<void> {
-  const keys = readKeys()
-  const keyIndex = keys.findIndex(k => k.id === keyId)
+// Bir API anahtarının kullanımını günceller (başarılı istek sonrası).
+export async function updateKeyUsage(id: string): Promise<void> {
+  const keyId = `${API_KEY_PREFIX}${id}`;
+  const key = await getDb<ApiKey>(keyId);
 
-  if (keyIndex !== -1) {
-    keys[keyIndex].usageCount += 1
-    keys[keyIndex].lastUsed = new Date().toISOString()
-    await writeKeys(keys)
+  if (key) {
+    key.usageCount++;
+    key.lastUsed = new Date().toISOString();
+    await setDb(keyId, key);
   }
+}
+
+// Bir API anahtarını ID'sine göre siler.
+export async function deleteApiKey(id: string): Promise<void> {
+  await deleteDb(`${API_KEY_PREFIX}${id}`);
+}
+
+// Bir API anahtarının aktif/pasif durumunu değiştirir.
+// Bir API anahtarını geçersiz olarak işaretler (örn. 401 hatası alındığında).
+export async function markKeyAsFailed(id: string): Promise<void> {
+  const keyId = `${API_KEY_PREFIX}${id}`;
+  const key = await getDb<ApiKey>(keyId);
+
+  if (key) {
+    key.isActive = false;
+    await setDb(keyId, key);
+    console.log(`API key ${id} marked as failed and deactivated.`);
+  }
+}
+
+export async function toggleApiKeyStatus(id: string): Promise<ApiKey | null> {
+  const keyId = `${API_KEY_PREFIX}${id}`;
+  const key = await getDb<ApiKey>(keyId);
+
+  if (key) {
+    key.isActive = !key.isActive;
+    await setDb(keyId, key);
+    // Güncellenmiş anahtarı, kısaltılmış anahtar bilgisiyle döndür
+    return { ...key, key: `${(await decrypt(key.key)).substring(0, 4)}...` };
+  }
+
+  return null;
+}
+
+// API Anahtarı arayüzü
+export interface ApiKey {
+    id: string;
+    key: string; // Şifrelenmiş anahtar
+    isActive: boolean;
+    usageCount: number;
+    addedAt: string;
+    lastUsed: string | null;
 }
