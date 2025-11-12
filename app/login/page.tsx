@@ -66,7 +66,7 @@ export default function LoginPage() {
             Admin Girişi
           </CardTitle>
           <CardDescription style={{ color: 'var(--text-tertiary)' }}>
-            GüleşciGPT admin paneline giriş yapın
+            HamzaGPT admin paneline giriş yapın
           </CardDescription>
         </CardHeader>
         <CardContent>

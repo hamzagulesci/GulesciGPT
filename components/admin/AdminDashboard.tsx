@@ -112,7 +112,7 @@ export function AdminDashboard() {
     >
       <div className="mb-4 md:mb-6">
         <h1 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
-          GüleşciGPT Admin
+          HamzaGPT Admin
         </h1>
         <p className="mt-1 text-sm md:text-base" style={{ color: 'var(--text-tertiary)' }}>
           Sistem yönetimi

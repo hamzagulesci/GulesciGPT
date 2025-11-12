@@ -1,4 +1,4 @@
-# 🚀 GÜLEŞCİGPT - HIZLI BAŞLANGIÇ REHBERİ
+# 🚀 HamzaGPT - HIZLI BAŞLANGIÇ REHBERİ
 
 ## ⚡ 5 Dakikada Test Et
 
@@ -126,8 +126,8 @@ Değiştirmek için:
 #### 2. Turnstile Oluştur
 1. Dashboard → "Turnstile" menüsü
 2. "Add Site" butonu
-3. **Site name:** GüleşciGPT
-4. **Domain:** gulescigpt.com (veya subdomain)
+3. **Site name:** HamzaGPT
+4. **Domain:** hamzagpt.com (veya subdomain)
 5. **Widget Mode:** Managed
 6. "Create" butonu
 
@@ -183,7 +183,7 @@ TURNSTILE_SECRET_KEY=0x4AAA...
 ### ✅ Production Modu:
 - CAPTCHA: ✅ Zorunlu (Turnstile key gerekli)
 - API Key: ✅ Zorunlu
-- Domain: ✅ Gerekli (gulescigpt.com)
+- Domain: ✅ Gerekli (hamzagpt.com)
 
 ---
 

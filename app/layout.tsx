@@ -7,14 +7,17 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'GulesciGPT - Claude',
+  title: 'HamzaGPT - Claude',
   description: 'Okul çapında kullanılacak ücretsiz AI chat uygulaması - 47 AI modeli',
   keywords: 'AI, chat, öğrenci, okul, yapay zeka, GPT',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'GulesciGPT',
+    title: 'HamzaGPT',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
   },
 }
 

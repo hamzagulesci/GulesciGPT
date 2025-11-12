@@ -36,7 +36,7 @@ export function verifyAdminPassword(password: string): boolean {
   if (!adminPassword || adminPassword === 'admin123') {
     console.error('⚠️ GÜVENLİK UYARISI: ADMIN_PASSWORD çevresel değişkeni ayarlanmamış veya varsayılan değerde!')
     if (process.env.NODE_ENV === 'production') {
-      throw new Error('Production ortamında ADMIN_PASSWORD ayarlanmalıdır')
+      return false
     }
   }
 

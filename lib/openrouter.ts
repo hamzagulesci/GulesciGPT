@@ -42,7 +42,7 @@ export async function sendChatRequest(
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://gulescigpt.com',
-      'X-Title': 'GüleşciGPT'
+      'X-Title': 'HamzaGPT'
     },
     body: JSON.stringify({
       model,
@@ -131,7 +131,7 @@ export async function sendChatRequestSimple(
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://gulescigpt.com',
-      'X-Title': 'GüleşciGPT'
+      'X-Title': 'HamzaGPT'
     },
     body: JSON.stringify({
       model,
