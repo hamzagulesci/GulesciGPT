@@ -52,13 +52,9 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
     setIsLoading(true)
 
     try {
-      const token = localStorage.getItem('jwt');
       const response = await fetch('/api/admin/keys', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key: newKey }),
       })
 
@@ -85,13 +81,9 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
     }
 
     try {
-      const token = localStorage.getItem('jwt');
       const response = await fetch('/api/admin/keys', {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ keyId }),
       })
 
@@ -110,14 +102,10 @@ export function KeyManagementTab({ keys, onRefresh }: KeyManagementTabProps) {
 
   const handleToggleStatus = async (keyId: string, isActive: boolean) => {
     try {
-      const token = localStorage.getItem('jwt');
       const response = await fetch('/api/admin/keys', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ id: keyId, isActive: !isActive }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyId, isActive: !isActive }),
       })
 
       const data = await response.json()

@@ -42,12 +42,7 @@ export function TokensTab() {
 
   const fetchTokenStats = async () => {
     try {
-      const token = localStorage.getItem('jwt');
-      const response = await fetch('/api/admin/tokens', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await fetch('/api/admin/tokens')
 
       if (!response.ok) {
         throw new Error('Token istatistikleri alınamadı')

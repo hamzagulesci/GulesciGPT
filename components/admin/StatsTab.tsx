@@ -89,7 +89,7 @@ export function StatsTab({ data }: StatsTabProps) {
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip
                 labelFormatter={(date) => {
-                  const d = new Date(date)
+                  const d = new Date(date as string)
                   return d.toLocaleDateString('tr-TR')
                 }}
                 contentStyle={{
