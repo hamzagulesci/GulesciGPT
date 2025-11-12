@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
 import { Toaster } from 'sonner'
@@ -11,18 +11,19 @@ export const metadata: Metadata = {
   description: 'Okul çapında kullanılacak ücretsiz AI chat uygulaması - 47 AI modeli',
   keywords: 'AI, chat, öğrenci, okul, yapay zeka, GPT',
   manifest: '/manifest.json',
-  themeColor: '#1E90FF',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'GulesciGPT',
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#1E90FF',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 }
 
 export default function RootLayout({

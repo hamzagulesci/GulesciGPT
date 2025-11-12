@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAdminPassword, createToken } from '@/lib/auth'
 import { checkRateLimit, resetRateLimit } from '@/lib/rateLimit'

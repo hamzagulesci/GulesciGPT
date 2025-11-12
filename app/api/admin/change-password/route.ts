@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken, verifyAdminPassword } from '@/lib/auth'
 import { setStoredPassword } from '@/lib/passwordManager'

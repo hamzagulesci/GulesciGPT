@@ -1,4 +1,3 @@
-import crypto from 'crypto'
 import { getStoredPassword } from './passwordManager'
 
 // Re-export JWT functions from jwt.ts (for backward compatibility)
@@ -6,16 +5,20 @@ export { createToken, verifyToken } from './jwt'
 
 // Timing-safe string comparison (timing attack koruması)
 function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    // Farklı uzunluklarda bile sabit süre bekle
-    crypto.timingSafeEqual(Buffer.from(a), Buffer.from(a))
-    return false
+  const encoder = new TextEncoder();
+  const bufA = encoder.encode(a);
+  const bufB = encoder.encode(b);
+
+  if (bufA.length !== bufB.length) {
+    return false;
   }
 
-  const bufA = Buffer.from(a)
-  const bufB = Buffer.from(b)
+  let result = 0;
+  for (let i = 0; i < bufA.length; i++) {
+    result |= bufA[i] ^ bufB[i];
+  }
 
-  return crypto.timingSafeEqual(bufA, bufB)
+  return result === 0;
 }
 
 // Admin şifresini kontrol et (timing attack korumalı)

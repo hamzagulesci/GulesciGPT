@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 import { getAllKeys, addKey, deleteKey, toggleKeyStatus } from '@/lib/keyManager'

@@ -1,11 +1,7 @@
-import fs from 'fs'
-import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import lockfile from 'proper-lockfile'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
-const KEYS_FILE = path.join(DATA_DIR, 'api-keys.json')
-const LOCK_FILE = path.join(DATA_DIR, 'api-keys.lock')
+// In-memory store for API keys in an Edge environment
+let keys: ApiKey[] = []
 
 export interface ApiKey {
   id: string
@@ -17,56 +13,14 @@ export interface ApiKey {
 }
 
 // Data klasörünü oluştur (yoksa)
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
-  if (!fs.existsSync(KEYS_FILE)) {
-    fs.writeFileSync(KEYS_FILE, '[]', 'utf-8')
-  }
-}
-
-// API key'leri oku
+// In-memory functions for an Edge environment
 function readKeys(): ApiKey[] {
-  ensureDataDir()
-  try {
-    const data = fs.readFileSync(KEYS_FILE, 'utf-8')
-    return JSON.parse(data)
-  } catch (error) {
-    console.error('API key okuma hatası:', error)
-    return []
-  }
+  return keys
 }
 
-// API key'leri yaz (file locking ile)
-async function writeKeys(keys: ApiKey[]): Promise<void> {
-  ensureDataDir()
-
-  try {
-    // Basit file lock
-    let release: (() => Promise<void>) | null = null
-    try {
-      release = await lockfile.lock(KEYS_FILE, {
-        retries: {
-          retries: 5,
-          minTimeout: 100,
-          maxTimeout: 500
-        }
-      })
-    } catch (err) {
-      // Lock alınamazsa devam et (best effort)
-      console.warn('Lock alınamadı, devam ediliyor:', err)
-    }
-
-    fs.writeFileSync(KEYS_FILE, JSON.stringify(keys, null, 2), 'utf-8')
-
-    if (release) {
-      await release()
-    }
-  } catch (error) {
-    console.error('API key yazma hatası:', error)
-    throw error
-  }
+async function writeKeys(newKeys: ApiKey[]): Promise<void> {
+  keys = newKeys
+  return Promise.resolve()
 }
 
 // Aktif key al

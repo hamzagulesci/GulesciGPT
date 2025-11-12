@@ -1,9 +1,6 @@
-import fs from 'fs'
-import path from 'path'
-import lockfile from 'proper-lockfile'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
-const SESSIONS_FILE = path.join(DATA_DIR, 'active-sessions.json')
+// In-memory store for sessions in an Edge environment
+let sessions: Session[] = []
 const SESSION_TIMEOUT = 5 * 60 * 1000 // 5 dakika
 
 interface Session {
@@ -15,54 +12,14 @@ interface Session {
 }
 
 // Data klasörünü oluştur
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
-  if (!fs.existsSync(SESSIONS_FILE)) {
-    fs.writeFileSync(SESSIONS_FILE, '[]', 'utf-8')
-  }
-}
-
-// Session'ları oku
+// In-memory functions for an Edge environment
 function readSessions(): Session[] {
-  ensureDataDir()
-  try {
-    const data = fs.readFileSync(SESSIONS_FILE, 'utf-8')
-    return JSON.parse(data)
-  } catch (error) {
-    console.error('Session okuma hatası:', error)
-    return []
-  }
+  return sessions;
 }
 
-// Session'ları yaz
-async function writeSessions(sessions: Session[]): Promise<void> {
-  ensureDataDir()
-
-  try {
-    let release: (() => Promise<void>) | null = null
-    try {
-      release = await lockfile.lock(SESSIONS_FILE, {
-        retries: {
-          retries: 5,
-          minTimeout: 100,
-          maxTimeout: 500
-        }
-      })
-    } catch (err) {
-      console.warn('Lock alınamadı, devam ediliyor:', err)
-    }
-
-    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), 'utf-8')
-
-    if (release) {
-      await release()
-    }
-  } catch (error) {
-    console.error('Session yazma hatası:', error)
-    throw error
-  }
+async function writeSessions(newSessions: Session[]): Promise<void> {
+  sessions = newSessions;
+  return Promise.resolve();
 }
 
 // Eski session'ları temizle

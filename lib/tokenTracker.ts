@@ -1,16 +1,6 @@
-import fs from 'fs'
-import path from 'path'
-import { lock, unlock } from 'proper-lockfile'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
-const TOKEN_STATS_FILE = path.join(DATA_DIR, 'token-stats.json')
-const LOCK_OPTIONS = {
-  retries: {
-    retries: 5,
-    minTimeout: 100,
-    maxTimeout: 1000
-  }
-}
+// In-memory store for token usage in an Edge environment
+let tokenUsageData: TokenUsage[] = []
 
 interface TokenUsage {
   date: string // YYYY-MM-DD
@@ -53,51 +43,14 @@ interface TokenStats {
 }
 
 // Ensure data directory exists
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
-}
-
-// Read token usage data
+// In-memory functions for an Edge environment
 function readTokenUsage(): TokenUsage[] {
-  ensureDataDir()
-
-  if (!fs.existsSync(TOKEN_STATS_FILE)) {
-    return []
-  }
-
-  try {
-    const data = fs.readFileSync(TOKEN_STATS_FILE, 'utf-8')
-    return JSON.parse(data)
-  } catch (error) {
-    console.error('Error reading token stats:', error)
-    return []
-  }
+  return tokenUsageData;
 }
 
-// Write token usage data with lock
 async function writeTokenUsage(usage: TokenUsage[]): Promise<void> {
-  ensureDataDir()
-
-  // Create file if it doesn't exist
-  if (!fs.existsSync(TOKEN_STATS_FILE)) {
-    fs.writeFileSync(TOKEN_STATS_FILE, JSON.stringify([]))
-  }
-
-  try {
-    await lock(TOKEN_STATS_FILE, LOCK_OPTIONS)
-    fs.writeFileSync(TOKEN_STATS_FILE, JSON.stringify(usage, null, 2))
-    await unlock(TOKEN_STATS_FILE)
-  } catch (error) {
-    console.error('Error writing token stats:', error)
-    // Try to unlock if locked
-    try {
-      await unlock(TOKEN_STATS_FILE)
-    } catch (unlockError) {
-      // Ignore unlock errors
-    }
-  }
+  tokenUsageData = usage;
+  return Promise.resolve();
 }
 
 // Clean old data (keep last 90 days)

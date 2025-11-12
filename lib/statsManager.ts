@@ -1,9 +1,14 @@
-import fs from 'fs'
-import path from 'path'
-import lockfile from 'proper-lockfile'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
-const STATS_FILE = path.join(DATA_DIR, 'stats.json')
+// In-memory store for stats in an Edge environment
+let stats: Stats = {
+  totalMessages: 0,
+  totalChats: 0,
+  messagesByDate: {},
+  messagesByModel: {},
+  lastUpdated: null,
+  averageResponseTime: 0,
+  responseTimes: []
+};
 
 export interface Stats {
   totalMessages: number
@@ -16,71 +21,14 @@ export interface Stats {
 }
 
 // Data klasörünü oluştur (yoksa)
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
-  if (!fs.existsSync(STATS_FILE)) {
-    const initialStats: Stats = {
-      totalMessages: 0,
-      totalChats: 0,
-      messagesByDate: {},
-      messagesByModel: {},
-      lastUpdated: null,
-      averageResponseTime: 0,
-      responseTimes: []
-    }
-    fs.writeFileSync(STATS_FILE, JSON.stringify(initialStats, null, 2), 'utf-8')
-  }
-}
-
-// İstatistikleri oku
+// In-memory functions for an Edge environment
 function readStats(): Stats {
-  ensureDataDir()
-  try {
-    const data = fs.readFileSync(STATS_FILE, 'utf-8')
-    return JSON.parse(data)
-  } catch (error) {
-    console.error('Stats okuma hatası:', error)
-    return {
-      totalMessages: 0,
-      totalChats: 0,
-      messagesByDate: {},
-      messagesByModel: {},
-      lastUpdated: null,
-      averageResponseTime: 0,
-      responseTimes: []
-    }
-  }
+  return stats;
 }
 
-// İstatistikleri yaz (file locking ile)
-async function writeStats(stats: Stats): Promise<void> {
-  ensureDataDir()
-
-  try {
-    let release: (() => Promise<void>) | null = null
-    try {
-      release = await lockfile.lock(STATS_FILE, {
-        retries: {
-          retries: 5,
-          minTimeout: 100,
-          maxTimeout: 500
-        }
-      })
-    } catch (err) {
-      console.warn('Lock alınamadı, devam ediliyor:', err)
-    }
-
-    fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2), 'utf-8')
-
-    if (release) {
-      await release()
-    }
-  } catch (error) {
-    console.error('Stats yazma hatası:', error)
-    throw error
-  }
+async function writeStats(newStats: Stats): Promise<void> {
+  stats = newStats;
+  return Promise.resolve();
 }
 
 // Mesaj sayısını artır

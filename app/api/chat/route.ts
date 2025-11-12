@@ -8,7 +8,7 @@ import { checkRateLimit } from '@/lib/rateLimit'
 import { logError } from '@/lib/errorLogger'
 import { trackTokenUsage } from '@/lib/tokenTracker'
 
-export const runtime = 'nodejs'
+export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {

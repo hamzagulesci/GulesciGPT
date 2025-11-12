@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { updateSession, getActiveUserCount } from '@/lib/sessionManager'
-import crypto from 'crypto'
 
-export const runtime = 'nodejs'
+export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 // GET: Aktif kullanıcı sayısını al

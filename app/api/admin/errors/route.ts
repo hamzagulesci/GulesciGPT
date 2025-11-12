@@ -3,7 +3,7 @@ import { verifyToken } from '@/lib/auth'
 import { getErrorStats, getErrorTrend, clearErrorLogs } from '@/lib/errorLogger'
 import { logAuditAction } from '@/lib/auditLogger'
 
-export const runtime = 'nodejs'
+export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 // Admin auth kontrolü
