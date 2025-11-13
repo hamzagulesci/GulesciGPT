@@ -304,7 +304,7 @@ export function Chat() {
 
   return (
     <>
-      <div className="flex h-screen">
+      <div className="flex min-h-screen" style={{ height: '100svh' }}>
         <Sidebar
           chats={chats}
           currentChatId={currentChat?.chatId || null}

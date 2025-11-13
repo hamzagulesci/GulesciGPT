@@ -58,6 +58,11 @@
     --radius: 0.5rem;
   }
 
+/* Prevent scroll anchoring to avoid forced auto-scroll when reading older messages */
+.no-scroll-anchoring {
+  overflow-anchor: none;
+}
+
 .prose {
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -77,6 +82,8 @@
   }
   html, body {
     touch-action: manipulation;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 }
 

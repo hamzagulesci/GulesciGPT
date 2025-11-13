@@ -20,7 +20,6 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const userScrolledRef = useRef(false)
-  const lastScrollTop = useRef(0)
 
   // Kullanıcı scroll yaptığını tespit et
   useEffect(() => {
@@ -29,29 +28,38 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container
-      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+      const isNearBottom = distanceFromBottom < 50
 
-      // Kullanıcı yukarı scroll yaptıysa, otomatik scroll'u durdur
-      if (scrollTop < lastScrollTop.current) {
-        userScrolledRef.current = true
-      }
-
-      // Kullanıcı en alta geldiyse, otomatik scroll'u aktif et
-      if (isAtBottom) {
-        userScrolledRef.current = false
-      }
-
-      lastScrollTop.current = scrollTop
+      // Kullanıcı alt kısımdan uzaksa otomatik scroll'u durdur, tekrar alta gelince aç
+      userScrolledRef.current = !isNearBottom
     }
 
     container.addEventListener('scroll', handleScroll)
     return () => container.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Detect end-of-list visibility; if not visible, pause auto-scroll
+  useEffect(() => {
+    const container = containerRef.current
+    const target = messagesEndRef.current
+    if (!container || !target) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        userScrolledRef.current = !entry.isIntersecting
+      },
+      { root: container, threshold: 1.0 }
+    )
+
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [])
+
   // Otomatik scroll (sadece kullanıcı manuel scroll yapmadıysa)
   useEffect(() => {
     if (!userScrolledRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
     }
   }, [messages, isLoading])
 
@@ -69,8 +77,12 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto p-3 md:p-4"
-      style={{ background: 'var(--bg-primary)' }}
+      className="flex-1 overflow-y-auto p-3 md:p-4 no-scroll-anchoring"
+      style={{
+        background: 'var(--bg-primary)',
+        overscrollBehaviorY: 'contain',
+        WebkitOverflowScrolling: 'touch'
+      }}
     >
       <div className="max-w-4xl mx-auto space-y-3 md:space-y-4">
         {messages.map((message, index) => {
