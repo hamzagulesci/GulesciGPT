@@ -234,4 +234,4 @@ Mesaj gönderebildiysen:
 2. ✅ API entegrasyonu çalışıyor
 3. ✅ Chat sistemi hazır
 
-Sonraki adım: **Deployment** (README.md'de detaylar var)
+Sonraki adım: **Deployment** (README.md'de detaylar var.)
