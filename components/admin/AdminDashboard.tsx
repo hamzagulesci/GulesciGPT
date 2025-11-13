@@ -88,8 +88,10 @@ export function AdminDashboard() {
   useEffect(() => {
     refreshData()
 
-    // Her 30 saniyede bir otomatik yenile
-    const interval = setInterval(fetchStats, 30000)
+    // Her 15 saniyede bir ana verileri yenile (keys + stats)
+    const interval = setInterval(() => {
+      refreshData()
+    }, 15000)
 
     return () => clearInterval(interval)
   }, [])

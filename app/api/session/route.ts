@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { updateSession, getActiveUserCount } from '@/lib/sessionManager'
+import { updateSession, getActiveUserCountAsync } from '@/lib/sessionManager'
 
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 // GET: Aktif kullanıcı sayısını al
 export async function GET() {
   try {
-    const count = getActiveUserCount()
+    const count = await getActiveUserCountAsync()
 
     return NextResponse.json({
       activeUsers: count,

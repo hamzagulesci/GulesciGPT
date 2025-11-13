@@ -63,14 +63,14 @@ export async function POST(request: NextRequest) {
           throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
         }
 
-        await updateKeyUsage(apiKeyObj.id);
-
+        const currentKeyId = apiKeyObj.id;
         const stream = new ReadableStream({
           async start(controller) {
             const reader = response.body!.getReader();
             const decoder = new TextDecoder();
             const encoder = new TextEncoder();
             let buffer = '';
+            let deliveredAnyContent = false;
 
             const sendEvent = (obj: any) => {
               const line = `data: ${JSON.stringify(obj)}\n\n`;
@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
                       for (const choice of choices) {
                         const delta = choice?.delta || {};
                         if (typeof delta.content === 'string' && delta.content) {
+                          deliveredAnyContent = true;
                           sendEvent({ type: 'content', data: delta.content });
                         }
                         // Attempt to forward any reasoning-like field if present
@@ -127,8 +128,11 @@ export async function POST(request: NextRequest) {
               controller.error(error);
             } finally {
               const responseTime = Date.now() - startTime;
-              await incrementMessageCount(model);
-              await addResponseTime(responseTime);
+              if (deliveredAnyContent) {
+                await incrementMessageCount(model);
+                await addResponseTime(responseTime);
+                await updateKeyUsage(currentKeyId);
+              }
               controller.close();
             }
           }

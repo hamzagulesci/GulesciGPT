@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import { getStats, getMessageTrend, getTopModels, resetStats } from '@/lib/statsManager';
+import { getActiveUserCountAsync } from '@/lib/sessionManager';
 import { listApiKeys } from '@/lib/keyManager';
 import { ApiKey } from '@/lib/keyManager'; // Import the interface
 
@@ -25,6 +26,10 @@ export async function GET(req: NextRequest) {
       getTopModels(5),
       listApiKeys()
     ]);
+
+    // Override active users with current in-memory session count (real-time)
+    const activeNow = await getActiveUserCountAsync();
+    (stats as any).activeUsers = activeNow;
 
     const keyStats = {
       active: allKeys.filter((k: ApiKey) => k.isActive).length,
