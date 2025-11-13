@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: 'HamzaGPT',
   description: 'Okul çapında kullanılacak ücretsiz AI chat uygulaması - 47 AI modeli',
   keywords: 'AI, chat, öğrenci, okul, yapay zeka, GPT',
-  manifest: '/manifest.json',
+  manifest: '/manifest.json?v=2',
   icons: {
     icon: '/icon-512.png',
     apple: '/icon-512.png',
@@ -29,8 +29,9 @@ export const viewport: Viewport = {
   themeColor: '#1E90FF',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({

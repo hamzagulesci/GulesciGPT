@@ -61,18 +61,62 @@ export async function POST(request: NextRequest) {
 
         await updateKeyUsage(apiKeyObj.id);
 
-        let accumulatedOutput = '';
         const stream = new ReadableStream({
           async start(controller) {
             const reader = response.body!.getReader();
             const decoder = new TextDecoder();
+            const encoder = new TextEncoder();
+            let buffer = '';
+
+            const sendEvent = (obj: any) => {
+              const line = `data: ${JSON.stringify(obj)}\n\n`;
+              controller.enqueue(encoder.encode(line));
+            };
+
             try {
               while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                const chunk = decoder.decode(value, { stream: true });
-                accumulatedOutput += chunk;
-                controller.enqueue(value);
+
+                buffer += decoder.decode(value, { stream: true });
+
+                // Process complete lines only; keep remainder in buffer
+                const lines = buffer.split('\n');
+                buffer = lines.pop() ?? '';
+
+                for (const line of lines) {
+                  const trimmed = line.trim();
+                  if (!trimmed) continue;
+
+                  // Ignore comment/keep-alive lines
+                  if (trimmed.startsWith(':')) continue;
+
+                  if (trimmed.startsWith('data:')) {
+                    const data = trimmed.slice(5).trim();
+                    if (data === '[DONE]') {
+                      continue;
+                    }
+                    try {
+                      const json = JSON.parse(data);
+                      const choices = json.choices || [];
+                      for (const choice of choices) {
+                        const delta = choice?.delta || {};
+                        if (typeof delta.content === 'string' && delta.content) {
+                          sendEvent({ type: 'content', data: delta.content });
+                        }
+                        // Attempt to forward any reasoning-like field if present
+                        if (typeof (delta as any).reasoning === 'string' && (delta as any).reasoning) {
+                          sendEvent({ type: 'reasoning', data: (delta as any).reasoning });
+                        }
+                        if (typeof (delta as any).reasoning_content === 'string' && (delta as any).reasoning_content) {
+                          sendEvent({ type: 'reasoning', data: (delta as any).reasoning_content });
+                        }
+                      }
+                    } catch {
+                      // ignore JSON parse errors from non-JSON data lines
+                    }
+                  }
+                }
               }
             } catch (error) {
               console.error('Stream reading error:', error);
@@ -81,7 +125,6 @@ export async function POST(request: NextRequest) {
               const responseTime = Date.now() - startTime;
               await incrementMessageCount(model);
               await addResponseTime(responseTime);
-              // Token tracking can be added here if needed
               controller.close();
             }
           }
@@ -89,9 +132,10 @@ export async function POST(request: NextRequest) {
 
         return new NextResponse(stream, {
           headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache, no-transform',
             'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
           },
         });
 
