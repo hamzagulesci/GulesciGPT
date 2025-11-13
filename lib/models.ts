@@ -56,7 +56,7 @@ export const AI_MODELS: AIModel[] = [
 ]
 
 // Varsayılan model
-export const DEFAULT_MODEL = "deepseek/deepseek-r1:free"
+export const DEFAULT_MODEL = "google/gemini-2.0-flash-exp:free"
 
 // Model ID'den model bilgisi al
 export function getModelById(id: string): AIModel | undefined {

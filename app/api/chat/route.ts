@@ -17,7 +17,9 @@ export async function POST(request: NextRequest) {
     const rateLimit = await checkRateLimit(`chat:${ip}`, 20, 60 * 1000);
 
     if (!rateLimit.allowed) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+      return NextResponse.json({
+        error: 'Çok fazla istek gönderildi. Lütfen kısa bir süre bekleyin veya farklı bir modeli seçip yeni bir sohbet başlatın.'
+      }, { status: 429 });
     }
 
     const { messages, model } = await request.json();
@@ -32,7 +34,9 @@ export async function POST(request: NextRequest) {
 
     while (retryCount < maxRetries) {
       if (!apiKeyObj) {
-        return NextResponse.json({ error: 'System busy, please try again later.' }, { status: 503 });
+        return NextResponse.json({
+          error: 'Sistem meşgul ya da API anahtarı bulunamadı. Lütfen daha sonra tekrar deneyin veya farklı bir modeli seçip yeni bir sohbet başlatın.'
+        }, { status: 503 });
       }
 
       try {
@@ -150,7 +154,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ error: 'Failed to get response from AI after multiple retries.' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Yapay zekadan yanıt alınamadı. Bu model şu anda yoğun kullanılıyor olabilir. Lütfen farklı bir modeli seçip yeni bir sohbet başlatın ve tekrar deneyin.'
+    }, { status: 500 });
 
   } catch (error: any) {
     await logError('chat', 'Unhandled API error', { message: error.message });

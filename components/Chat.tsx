@@ -321,42 +321,44 @@ export function Chat() {
         <main className="flex-1 flex flex-col">
           {/* Top Bar - Navbar */}
           <div
-            className="p-3 md:p-4 flex items-center gap-3 shadow-sm"
+            className="p-3 md:p-4 shadow-sm"
             style={{
               background: 'var(--bg-navbar)',
               borderBottom: '1px solid var(--border-color)',
               boxShadow: '0px 2px 4px var(--shadow)'
             }}
           >
-            {/* Hamburger Menu (Mobile) */}
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg flex-shrink-0 transition-colors"
-              style={{
-                background: 'var(--bg-secondary)',
-                color: 'var(--text-primary)'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-action)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
-              aria-label="Menüyü aç"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
+            <div className="max-w-4xl mx-auto w-full flex items-center gap-3">
+              {/* Hamburger Menu (Mobile) */}
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden p-2 rounded-lg flex-shrink-0 transition-colors"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-action)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                aria-label="Menüyü aç"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
 
-            <div className="flex-1 min-w-0 pr-2">
-              <h2 className="text-base md:text-lg font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
-                {currentChat?.title || 'Yeni Sohbet'}
-              </h2>
-              <p className="text-xs md:text-sm truncate" style={{ color: 'var(--text-tertiary)' }}>
-                Model: {selectedModel.split('/').pop()?.split(':')[0]}
-              </p>
+              <div className="flex-1 min-w-0 pr-2">
+                <h2 className="text-base md:text-lg font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                  {currentChat?.title || 'Yeni Sohbet'}
+                </h2>
+                <p className="text-xs md:text-sm truncate" style={{ color: 'var(--text-tertiary)' }}>
+                  Model: {selectedModel.split('/').pop()?.split(':')[0]}
+                </p>
+              </div>
+
+              <ModelSelector
+                selectedModel={selectedModel}
+                onModelChange={handleModelChange}
+                className="w-32 md:w-48 lg:w-64 flex-shrink-0"
+              />
             </div>
-
-            <ModelSelector
-              selectedModel={selectedModel}
-              onModelChange={handleModelChange}
-              className="w-32 md:w-48 lg:w-64 flex-shrink-0"
-            />
           </div>
 
           {/* Messages */}
@@ -367,11 +369,13 @@ export function Chat() {
           />
 
           {/* Input */}
-          <MessageInput
-            onSend={handleSendMessage}
-            disabled={isLoading}
-            onStop={handleStopGeneration}
-          />
+          <div className="max-w-4xl mx-auto w-full">
+            <MessageInput
+              onSend={handleSendMessage}
+              disabled={isLoading}
+              onStop={handleStopGeneration}
+            />
+          </div>
         </main>
       </div>
 

@@ -67,8 +67,8 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
     return (
       <div className="flex-1 flex items-center justify-center p-8" style={{ background: 'var(--bg-primary)' }}>
         <div className="text-center" style={{ color: 'var(--text-tertiary)' }}>
-          <p className="text-xl font-medium mb-2">Sohbet başlat!</p>
-          <p className="text-sm">Aşağıdaki input alanından mesaj göndererek başlayın</p>
+          <p className="text-xl font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>HamzaGPT'ye hoş geldin!</p>
+          <p className="text-sm">Sohbet başlatmak için aşağıdaki alana yaz ve Enter'a bas.</p>
         </div>
       </div>
     )
