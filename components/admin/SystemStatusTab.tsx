@@ -93,11 +93,12 @@ export function SystemStatusTab({ stats, keyStats, onRefresh }: SystemStatusTabP
         <Card>
           <CardHeader>
             <CardTitle>Performans</CardTitle>
+            <CardDescription className="text-xs">Formül: Ortalama = Toplam yanıt süresi / Yanıt sayısı</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Ortalama Yanıt Süresi:</span>
-              <span className="font-semibold">{stats.averageResponseTime}ms</span>
+              <span className="font-semibold">{Math.max(0, Math.round(stats.averageResponseTime)).toLocaleString('tr-TR')} ms</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Bugünkü Mesajlar:</span>

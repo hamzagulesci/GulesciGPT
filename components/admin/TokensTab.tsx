@@ -43,7 +43,10 @@ export function TokensTab() {
 
   const fetchTokenStats = async () => {
     try {
-      const response = await fetch('/api/admin/tokens')
+      const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null
+      const response = await fetch('/api/admin/tokens', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
 
       if (!response.ok) {
         throw new Error('Token istatistikleri alınamadı')

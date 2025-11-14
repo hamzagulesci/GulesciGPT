@@ -115,16 +115,6 @@ export function Sidebar({
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
             HamzaGPT
           </h1>
-          <button
-            onClick={toggleSidebar}
-            className="transition-colors"
-            style={{ color: 'var(--text-tertiary)' }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-action-hover)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-tertiary)'}
-            aria-label="Menüyü kapat"
-          >
-            <X className="h-6 w-6" />
-          </button>
         </div>
 
         <Button
@@ -304,30 +294,16 @@ export function Sidebar({
   )
 
   return (
-    <>
-      {/* Mobile Overlay */}
-      {isOpen && (
-        <div
-          className="md:hidden fixed inset-0 z-40"
-          style={{ background: 'rgba(0, 0, 0, 0.8)' }}
-          onClick={toggleSidebar}
-          aria-label="Menüyü kapat"
-        />
+    <aside
+      ref={asideRef}
+      tabIndex={-1}
+      role="complementary"
+      aria-label="Sohbet kenar çubuğu"
+      className={cn(
+        "sidebar hidden md:flex md:flex-col md:w-80 flex-shrink-0"
       )}
-
-      {/* Sidebar */}
-      <aside
-        ref={asideRef}
-        tabIndex={-1}
-        role="complementary"
-        aria-label="Sohbet kenar çubuğu"
-        className={cn(
-          "sidebar fixed md:relative inset-y-0 left-0 z-50 w-80 transition-transform duration-300",
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        {sidebarContent}
-      </aside>
-    </>
+    >
+      {sidebarContent}
+    </aside>
   )
 }

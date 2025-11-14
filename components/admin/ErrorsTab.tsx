@@ -59,7 +59,10 @@ export function ErrorsTab() {
 
   const fetchErrors = async () => {
     try {
-      const response = await fetch('/api/admin/errors')
+      const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null
+      const response = await fetch('/api/admin/errors', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
 
       if (!response.ok) {
         throw new Error('Hata verileri alınamadı')
@@ -82,8 +85,10 @@ export function ErrorsTab() {
 
     setIsClearing(true)
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null
       const response = await fetch('/api/admin/errors', {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
 
       if (!response.ok) {

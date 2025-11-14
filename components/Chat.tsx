@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
-import { Menu, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
@@ -348,20 +348,6 @@ export function Chat() {
             }}
           >
             <div className="max-w-4xl mx-auto w-full flex items-center gap-3">
-              {/* Hamburger Menu (Mobile) */}
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className="p-2 rounded-lg flex-shrink-0 transition-colors"
-                style={{
-                  background: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-action)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
-                aria-label="Menüyü aç"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
 
               <div className="flex-1 min-w-0 pr-2">
                 <h2 className="text-base md:text-lg font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
@@ -378,15 +364,15 @@ export function Chat() {
                   onModelChange={handleModelChange}
                   className="w-32 md:w-48 lg:w-64 flex-shrink-0"
                 />
-                <button
-                  type="button"
+                <a
+                  href="/gizlilik"
                   title="Not: Modellerin çoğu sağlayıcı düzeyinde teknik kayıt tutabilir. Hassas veri girmeyin."
-                  aria-label="Model veri notu"
-                  className="p-1 rounded"
+                  aria-label="Gizlilik bildirimi"
+                  className="p-1 rounded cursor-pointer"
                   style={{ color: 'var(--text-tertiary)' }}
                 >
                   <Info className="h-4 w-4" />
-                </button>
+                </a>
               </div>
             </div>
           </header>
