@@ -100,7 +100,7 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
           >
             <div
               className={cn(
-                "max-w-[95%] md:max-w-[85%] lg:max-w-[80%] rounded-lg px-3 md:px-4 py-2 md:py-3",
+                "max-w-[85%] rounded-lg px-3 md:px-4 py-2 md:py-3",
                 isUser ? "ml-auto" : ""
               )}
               style={isUser
@@ -119,7 +119,7 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
                 isUser ? "prose-invert" : ""
               )}>
                 {isUser ? (
-                  <p className="whitespace-pre-wrap m-0">{message.content}</p>
+                  <p className="whitespace-pre-wrap m-0" style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>{message.content}</p>
                 ) : (
                   <ReactMarkdown
                     components={{
@@ -132,6 +132,10 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
                           <code style={{ background: '#0D0D0D', color: 'var(--text-secondary)' }} className={`block p-3 rounded my-2 overflow-x-auto font-mono text-sm ${className || ''}`} {...props} />
                         )
                       },
+                      img: ({ node, ...props }: any) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img loading="lazy" style={{ maxWidth: '100%', height: 'auto' }} {...props} alt={props.alt || ''} />
+                      )
                     }}
                   >
                     {message.content}

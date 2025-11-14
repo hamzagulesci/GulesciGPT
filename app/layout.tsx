@@ -39,16 +39,40 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID
-
   return (
     <html lang="tr">
-      <head>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3164898310826304" crossOrigin="anonymous"></script>
-      </head>
+      <head></head>
       <body className={inter.className}>
         {children}
         <Toaster position="top-center" richColors closeButton />
+
+        <footer
+          style={{
+            textAlign: 'center',
+            marginTop: '32px',
+            padding: '18px 8px',
+            fontSize: '13px',
+            color: '#444',
+          }}
+        >
+          <p style={{ margin: 0 }}>
+            Bu siteyi kullanarak{' '}
+            <a
+              href="/kullanim-kosullari"
+              style={{ textDecoration: 'underline', color: 'inherit' }}
+            >
+              Kullanım Koşulları
+            </a>{' '}
+            ve{' '}
+            <a href="/gizlilik" style={{ textDecoration: 'underline', color: 'inherit' }}>
+              Gizlilik Bildirimini
+            </a>{' '}
+            okuduğunuzu ve kabul ettiğinizi onaylamış sayılırsınız.
+          </p>
+          <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#666' }}>
+            UYARI: Yapay zekâlar hata yapabilir; üretilen içerikleri doğrulamadan önemli kararlar almayın.
+          </p>
+        </footer>
 
         {/* PWA Service Worker */}
         <Script id="register-sw" strategy="afterInteractive">

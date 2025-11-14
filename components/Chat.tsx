@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
-import { Menu } from 'lucide-react'
+import { Menu, Info } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
@@ -304,7 +304,7 @@ export function Chat() {
 
   return (
     <>
-      <div className="flex min-h-screen" style={{ height: '100svh' }}>
+      <div className="flex min-h-screen" style={{ height: '100dvh' }}>
         <Sidebar
           chats={chats}
           currentChatId={currentChat?.chatId || null}
@@ -353,11 +353,22 @@ export function Chat() {
                 </p>
               </div>
 
-              <ModelSelector
-                selectedModel={selectedModel}
-                onModelChange={handleModelChange}
-                className="w-32 md:w-48 lg:w-64 flex-shrink-0"
-              />
+              <div className="flex items-center gap-2">
+                <ModelSelector
+                  selectedModel={selectedModel}
+                  onModelChange={handleModelChange}
+                  className="w-32 md:w-48 lg:w-64 flex-shrink-0"
+                />
+                <button
+                  type="button"
+                  title="Not: Modellerin çoğu sağlayıcı düzeyinde teknik kayıt tutabilir. Hassas veri girmeyin."
+                  aria-label="Model veri notu"
+                  className="p-1 rounded"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
+                  <Info className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -369,7 +380,7 @@ export function Chat() {
           />
 
           {/* Input */}
-          <div className="max-w-4xl mx-auto w-full">
+          <div className="max-w-4xl mx-auto w-full sticky bottom-0 z-10">
             <MessageInput
               onSend={handleSendMessage}
               disabled={isLoading}

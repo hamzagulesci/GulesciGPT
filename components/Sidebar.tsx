@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2, Menu, X, Pencil, Check } from 'lucide-react'
+import { Plus, Trash2, Menu, X, Pencil, Check, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Chat, renameChatTitle } from '@/lib/localStorage'
 import { formatDate } from '@/lib/utils'
@@ -119,13 +119,24 @@ export function Sidebar({
 
       {/* Model Selector */}
       <div className="p-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
-        <label
-          className="text-sm mb-2 block"
-          style={{ color: 'var(--text-tertiary)' }}
-          htmlFor="model-selector"
-        >
-          Model Seçin
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label
+            className="text-sm block"
+            style={{ color: 'var(--text-tertiary)' }}
+            htmlFor="model-selector"
+          >
+            Model Seçin
+          </label>
+          <button
+            type="button"
+            title="Not: Modellerin çoğu sağlayıcı düzeyinde teknik kayıt tutabilir. Hassas veri girmeyin."
+            aria-label="Model veri notu"
+            className="p-1 rounded"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
+            <Info className="h-4 w-4" />
+          </button>
+        </div>
         <ModelSelector
           selectedModel={selectedModel}
           onModelChange={onModelChange}
@@ -261,10 +272,7 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Ad Space - Sidebar Bottom */}
-      <div className="p-4" style={{ borderTop: '1px solid var(--border-color)' }}>
-        <div id="ad-sidebar" className="w-full h-[250px]"></div>
-      </div>
+      
     </div>
   )
 
