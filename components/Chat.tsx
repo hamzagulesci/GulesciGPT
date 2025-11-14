@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { toast } from 'sonner'
-import { Info } from 'lucide-react'
+import { Menu, Info } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { MessageList } from './MessageList'
 import { MessageInput } from './MessageInput'
@@ -363,6 +363,18 @@ export function Chat() {
             }}
           >
             <div className="max-w-4xl mx-auto w-full flex items-center gap-3">
+              {/* Hamburger Menu (Mobile only) */}
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="md:hidden p-2 rounded-lg flex-shrink-0 transition-colors"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)'
+                }}
+                aria-label="Menüyü aç"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
 
               <div className="flex-1 min-w-0 pr-2">
                 <h2 className="text-base md:text-lg font-semibold truncate" style={{ color: 'var(--text-primary)' }}>

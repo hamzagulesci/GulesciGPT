@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'HamzaGPT',
-  description: 'Okul çapında kullanılacak ücretsiz AI chat uygulaması - 47 AI modeli',
+  description: 'Ücretsiz AI chat uygulaması - 47 AI modeli',
   keywords: 'AI, chat, öğrenci, okul, yapay zeka, GPT',
   manifest: '/manifest.json?v=2',
   icons: {
