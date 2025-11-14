@@ -60,7 +60,7 @@ export const MessageInput = memo(function MessageInput({ onSend, disabled, onSto
       }}
     >
       {/* Mesaj Input */}
-      <div className="flex gap-2 items-stretch">
+      <div className="flex gap-2 items-end">
         <Textarea
           ref={textareaRef}
           value={message}
@@ -86,7 +86,7 @@ export const MessageInput = memo(function MessageInput({ onSend, disabled, onSto
         {disabled && onStop ? (
           <Button
             onClick={onStop}
-            className="flex-shrink-0 h-full px-3 md:px-4 rounded-lg"
+            className="flex-shrink-0 h-[50px] md:h-[60px] w-[50px] md:w-[60px] rounded-lg flex items-center justify-center"
             style={{
               background: '#ef4444',
               color: 'white',
@@ -100,7 +100,7 @@ export const MessageInput = memo(function MessageInput({ onSend, disabled, onSto
           <Button
             onClick={handleSend}
             disabled={!canSend}
-            className="flex-shrink-0 h-full px-3 md:px-4 rounded-lg"
+            className="flex-shrink-0 h-[50px] md:h-[60px] w-[50px] md:w-[60px] rounded-lg flex items-center justify-center"
             style={{
               background: canSend ? 'var(--color-action)' : 'var(--border-color)',
               color: 'var(--text-primary)',

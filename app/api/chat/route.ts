@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getActiveApiKey, markKeyAsFailed, updateKeyUsage } from '@/lib/keyManager';
+import { getActiveApiKeysInOrder, markKeyAsFailed, updateKeyUsage } from '@/lib/keyManager';
 import { incrementMessageCount, addResponseTime } from '@/lib/statsManager';
 import { checkRateLimit } from '@/lib/rateLimit';
 import { logError } from '@/lib/errorLogger';
 import { trackTokenUsage } from '@/lib/tokenTracker';
 import { isValidString } from '@/lib/validation';
+import { getDefaultModelId } from '@/lib/settings';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -22,23 +23,27 @@ export async function POST(request: NextRequest) {
       }, { status: 429 });
     }
 
-    const { messages, model } = await request.json();
+    const body = await request.json();
+    const messages = body?.messages;
+    let model: string | null = body?.model;
 
-    if (!Array.isArray(messages) || messages.length === 0 || !isValidString(model, 200)) {
+    if (!Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    let apiKeyObj = await getActiveApiKey();
-    let retryCount = 0;
-    const maxRetries = 3;
+    if (!isValidString(model ?? '', 200)) {
+      model = await getDefaultModelId();
+    }
+    const modelId: string = model as string;
 
-    while (retryCount < maxRetries) {
-      if (!apiKeyObj) {
-        return NextResponse.json({
-          error: 'Sistem meşgul ya da API anahtarı bulunamadı. Lütfen daha sonra tekrar deneyin veya farklı bir modeli seçip yeni bir sohbet başlatın.'
-        }, { status: 503 });
-      }
+    const keys = await getActiveApiKeysInOrder();
+    if (!keys || keys.length === 0) {
+      return NextResponse.json({
+        error: 'Sistem meşgul ya da API anahtarı bulunamadı. Lütfen daha sonra tekrar deneyin veya farklı bir modeli seçip yeni bir sohbet başlatın.'
+      }, { status: 503 });
+    }
 
+    for (const apiKeyObj of keys) {
       try {
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
@@ -48,19 +53,18 @@ export async function POST(request: NextRequest) {
             'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://hamzagpt.com',
             'X-Title': 'HamzaGPT'
           },
-          body: JSON.stringify({ model, messages, stream: true })
+          body: JSON.stringify({ model: modelId, messages, stream: true })
         });
 
         if (response.status === 401) {
           console.warn(`API key ${apiKeyObj.id} is invalid. Marking as failed.`);
           await markKeyAsFailed(apiKeyObj.id);
-          apiKeyObj = await getActiveApiKey();
-          retryCount++;
-          continue;
+          continue; // try next key immediately
         }
 
         if (!response.ok) {
-          throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+          // try next key immediately on any non-2xx
+          continue;
         }
 
         const currentKeyId = apiKeyObj.id;
@@ -129,7 +133,7 @@ export async function POST(request: NextRequest) {
             } finally {
               const responseTime = Date.now() - startTime;
               if (deliveredAnyContent) {
-                await incrementMessageCount(model);
+                await incrementMessageCount(modelId);
                 await addResponseTime(responseTime);
                 await updateKeyUsage(currentKeyId);
               }
@@ -148,18 +152,13 @@ export async function POST(request: NextRequest) {
         });
 
       } catch (error) {
-        if (apiKeyObj) {
-          console.error(`Attempt ${retryCount + 1} failed for key ${apiKeyObj.id}:`, error);
-        } else {
-          console.error(`Attempt ${retryCount + 1} failed as no API key was available.`, error);
-        }
-        apiKeyObj = await getActiveApiKey(); // Get a new key for the next attempt
-        retryCount++;
+        console.error(`Key ${apiKeyObj.id} failed with error:`, error);
+        // try next key
       }
     }
 
     return NextResponse.json({
-      error: 'Yapay zekadan yanıt alınamadı. Bu model şu anda yoğun kullanılıyor olabilir. Lütfen farklı bir modeli seçip yeni bir sohbet başlatın ve tekrar deneyin.'
+      error: 'Model şu an yoğun, lütfen tekrar deneyin.'
     }, { status: 500 });
 
   } catch (error: any) {

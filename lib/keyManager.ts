@@ -27,6 +27,37 @@ export async function addApiKey(key: string): Promise<ApiKey> {
   }
 }
 
+// Aktif API anahtarlarını kullanım sayısına göre sırala ve şifresini çöz
+export async function getActiveApiKeysInOrder(): Promise<{ id: string; key: string }[]> {
+  // Dahili tüm anahtarları al
+  const keyFiles = await listDb(API_KEY_PREFIX)
+  const keys: ApiKey[] = []
+  for (const keyFile of keyFiles) {
+    const keyData = await getDb<ApiKey>(keyFile.name)
+    if (keyData) {
+      keys.push(keyData)
+    }
+  }
+
+  const active = keys.filter(k => k.isActive)
+  active.sort((a, b) => {
+    if (a.usageCount !== b.usageCount) return a.usageCount - b.usageCount
+    const aLast = a.lastUsed ? Date.parse(a.lastUsed) : 0
+    const bLast = b.lastUsed ? Date.parse(b.lastUsed) : 0
+    if (aLast !== bLast) return aLast - bLast
+    const aAdded = Date.parse(a.addedAt)
+    const bAdded = Date.parse(b.addedAt)
+    return aAdded - bAdded
+  })
+
+  const result: { id: string; key: string }[] = []
+  for (const k of active) {
+    const plain = await decrypt(k.key)
+    result.push({ id: k.id, key: plain })
+  }
+  return result
+}
+
 // Kullanım için aktif bir API anahtarı alır.
 // En az kullanılmış olanı seçer ve kullanım sayacını artırır.
 export async function getActiveApiKey(): Promise<{ id: string; key: string } | null> {

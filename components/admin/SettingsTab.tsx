@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { AI_MODELS } from '@/lib/models'
 import { enableEncryption, disableEncryption, getEncryptionStatus } from '@/lib/encryptionWrapper'
 
 export function SettingsTab() {
@@ -15,6 +17,19 @@ export function SettingsTab() {
   const [isChanging, setIsChanging] = useState(false)
   const [encryptionStatus, setEncryptionStatus] = useState({ enabled: false, dataEncrypted: false })
   const [isTogglingEncryption, setIsTogglingEncryption] = useState(false)
+  const [defaultModelId, setDefaultModelId] = useState<string | null>(null)
+  const [isSavingDefault, setIsSavingDefault] = useState(false)
+
+  const fetchWithAuth = async (url: string, options?: RequestInit) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null
+    return fetch(url, {
+      ...(options || {}),
+      headers: {
+        ...(options?.headers || {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }
+    })
+  }
 
   const handlePasswordChange = async () => {
     // Validation
@@ -112,10 +127,68 @@ export function SettingsTab() {
   useEffect(() => {
     // Load encryption status on mount
     setEncryptionStatus(getEncryptionStatus())
+    // Load default model from server
+    fetchWithAuth('/api/admin/settings')
+      .then(r => r.json())
+      .then(data => {
+        if (data?.defaultModelId) setDefaultModelId(data.defaultModelId)
+      })
+      .catch(() => {})
   }, [])
 
   return (
     <div className="space-y-6">
+      {/* Default Model Card */}
+      <Card style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
+        <CardHeader>
+          <CardTitle style={{ color: 'var(--text-primary)' }}>Varsayılan Model</CardTitle>
+          <CardDescription style={{ color: 'var(--text-tertiary)' }}>
+            Kullanıcı bir model seçmemişse kullanılacak model
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="default-model" style={{ color: 'var(--text-secondary)' }}>
+              Model
+            </Label>
+            <Select value={defaultModelId ?? undefined} onValueChange={setDefaultModelId as any}>
+              <SelectTrigger id="default-model" className="w-full" style={{ background: 'var(--bg-primary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
+                <SelectValue placeholder="Model seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                {AI_MODELS.map(m => (
+                  <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            onClick={async () => {
+              if (!defaultModelId) return
+              setIsSavingDefault(true)
+              try {
+                const res = await fetchWithAuth('/api/admin/settings', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ defaultModelId })
+                })
+                const data = await res.json().catch(() => null)
+                if (!res.ok) throw new Error(data?.error || 'Kaydedilemedi')
+                toast.success('Varsayılan model güncellendi')
+              } catch (e: any) {
+                toast.error(e.message || 'Hata oluştu')
+              } finally {
+                setIsSavingDefault(false)
+              }
+            }}
+            disabled={!defaultModelId || isSavingDefault}
+            style={{ background: 'var(--color-action)', color: 'var(--text-primary)' }}
+          >
+            {isSavingDefault ? 'Kaydediliyor...' : 'Kaydet'}
+          </Button>
+        </CardContent>
+      </Card>
       <Card style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)' }}>
         <CardHeader>
           <CardTitle style={{ color: 'var(--text-primary)' }}>Admin Şifresi Değiştir</CardTitle>

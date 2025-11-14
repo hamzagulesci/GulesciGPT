@@ -46,24 +46,39 @@ export function Chat() {
 
   // Load chats ve selected model on mount
   useEffect(() => {
-    const loadedChats = getAllChats()
-    setChats(loadedChats)
+    const init = async () => {
+      const loadedChats = getAllChats()
+      setChats(loadedChats)
 
-    const savedModel = getSelectedModel()
-    if (savedModel) {
-      setSelectedModelState(savedModel)
-    }
+      let model = getSelectedModel()
+      if (!model) {
+        try {
+          const res = await fetch('/api/config')
+          const data = await res.json().catch(() => null)
+          if (data?.defaultModelId) {
+            const m = data.defaultModelId as string
+            model = m
+            setSelectedModelState(m)
+            setSelectedModel(m)
+          }
+        } catch {}
+      } else {
+        setSelectedModelState(model as string)
+      }
 
-    // İlk chat'i yükle veya yeni oluştur
-    if (loadedChats.length > 0) {
-      handleSelectChat(loadedChats[0].chatId)
-    } else {
-      handleNewChat()
+      // İlk chat'i yükle veya yeni oluştur
+      if (loadedChats.length > 0) {
+        handleSelectChat(loadedChats[0].chatId)
+      } else {
+        handleNewChat()
+      }
+
+      // Masaüstünde varsayılan olarak sidebar açık
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        setIsSidebarOpen(true)
+      }
     }
-    // Masaüstünde varsayılan olarak sidebar açık
-    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-      setIsSidebarOpen(true)
-    }
+    init()
   }, [])
 
   // Set --vh CSS variable for mobile 100vh issues (iOS/Android keyboards)

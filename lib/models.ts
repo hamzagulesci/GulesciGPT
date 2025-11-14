@@ -56,7 +56,7 @@ export const AI_MODELS: AIModel[] = [
 ]
 
 // Varsayılan model
-export const DEFAULT_MODEL = "openrouter/polaris-alpha"
+export const DEFAULT_MODEL = "mistralai/mistral-nemo:free"
 
 // Model ID'den model bilgisi al
 export function getModelById(id: string): AIModel | undefined {
