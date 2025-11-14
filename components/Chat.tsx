@@ -404,28 +404,49 @@ export function Chat() {
             </div>
           </header>
 
-          {/* Messages */}
-          <MessageList
-            messages={messages}
-            isLoading={isLoading}
-            modelId={selectedModel}
-          />
+          {/* Content + Right Ad (desktop) */}
+          <div className="mx-auto w-full px-2 md:px-4" style={{ maxWidth: '1200px' }}>
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,800px)_300px] gap-4">
+              {/* Chat Column */}
+              <div>
+                {/* Messages */}
+                <MessageList
+                  messages={messages}
+                  isLoading={isLoading}
+                  modelId={selectedModel}
+                />
 
-          {/* Input */}
-          <div className="input-bar max-w-4xl mx-auto w-full sticky z-10" style={{ bottom: 'env(safe-area-inset-bottom, 0)' }}>
-            <MessageInput
-              onSend={handleSendMessage}
-              disabled={isLoading}
-              onStop={handleStopGeneration}
-            />
-            <div className="px-3 md:px-4 py-2 text-center">
-              <div className="text-[11px] md:text-xs leading-5" style={{ color: 'var(--text-tertiary)' }}>
-                <p className="m-0">UYARI: Hassas kişisel veya finansal bilgileri paylaşmayın. Yapay zekâ modelleri hata yapabilir; üretilen içerikleri doğrulamadan önemli kararlar almayın.</p>
-                <p className="m-0">Not: Modellerin çoğu sağlayıcı düzeyinde teknik kayıt tutabilir. Hassas veri girmeyin.</p>
+                {/* Input */}
+                <div className="input-bar w-full sticky z-10" style={{ bottom: 'env(safe-area-inset-bottom, 0)' }}>
+                  <MessageInput
+                    onSend={handleSendMessage}
+                    disabled={isLoading}
+                    onStop={handleStopGeneration}
+                  />
+                  <div className="px-3 md:px-4 py-2 text-center">
+                    <div className="text-[11px] md:text-xs leading-5" style={{ color: 'var(--text-tertiary)' }}>
+                      <p className="m-0">UYARI: Hassas kişisel veya finansal bilgileri paylaşmayın. Yapay zekâ modelleri hata yapabilir; üretilen içerikleri doğrulamadan önemli kararlar almayın.</p>
+                      <p className="m-0">Not: Modellerin çoğu sağlayıcı düzeyinde teknik kayıt tutabilir. Hassas veri girmeyin.</p>
+                    </div>
+                    <p className="mt-2 text-[11px] md:text-xs" style={{ color: '#666' }}>
+                      Bu siteyi kullanarak <a href="/kullanim-kosullari" style={{ textDecoration: 'underline', color: 'inherit' }}>Kullanım Koşulları</a> ve <a href="/gizlilik" style={{ textDecoration: 'underline', color: 'inherit' }}>Gizlilik Bildirimini</a> okuduğunuzu ve kabul ettiğinizi onaylamış sayılırsınız.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <p className="mt-2 text-[11px] md:text-xs" style={{ color: '#666' }}>
-                Bu siteyi kullanarak <a href="/kullanim-kosullari" style={{ textDecoration: 'underline', color: 'inherit' }}>Kullanım Koşulları</a> ve <a href="/gizlilik" style={{ textDecoration: 'underline', color: 'inherit' }}>Gizlilik Bildirimini</a> okuduğunuzu ve kabul ettiğinizi onaylamış sayılırsınız.
-              </p>
+
+              {/* Right Ad */}
+              <aside className="hidden md:block sticky self-start" style={{ top: 80 }} aria-label="Sağ reklam alanı">
+                <ins
+                  className="adsbygoogle"
+                  style={{ display: 'inline-block', width: 300, height: 650 }}
+                  data-ad-client="ca-pub-3164898310826304"
+                  data-ad-slot="8599052074"
+                />
+                <script
+                  dangerouslySetInnerHTML={{ __html: '(adsbygoogle = (window as any).adsbygoogle || []).push({});' }}
+                />
+              </aside>
             </div>
           </div>
         </main>
