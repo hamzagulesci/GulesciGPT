@@ -55,6 +55,7 @@ export function ErrorsTab() {
   const [errorData, setErrorData] = useState<ErrorData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isClearing, setIsClearing] = useState(false)
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null)
 
   const fetchErrors = async () => {
     try {
@@ -66,6 +67,7 @@ export function ErrorsTab() {
 
       const data = await response.json()
       setErrorData(data)
+      setLastUpdatedAt(new Date())
     } catch (error: any) {
       toast.error(error.message || 'Veri yüklenemedi')
     } finally {
@@ -99,11 +101,6 @@ export function ErrorsTab() {
 
   useEffect(() => {
     fetchErrors()
-
-    // Her 30 saniyede bir otomatik yenile
-    const interval = setInterval(fetchErrors, 30000)
-
-    return () => clearInterval(interval)
   }, [])
 
   if (isLoading || !errorData) {
@@ -133,6 +130,18 @@ export function ErrorsTab() {
 
   return (
     <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="text-xs md:text-sm" style={{ color: 'var(--text-tertiary)' }}>
+          Son güncelleme: {lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleString('tr-TR') : '—'}
+        </div>
+        <button
+          onClick={fetchErrors}
+          className="px-3 py-1.5 rounded text-sm"
+          style={{ background: 'var(--color-action)', color: 'var(--text-primary)' }}
+        >
+          Yenile
+        </button>
+      </div>
       {/* Overview Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card>

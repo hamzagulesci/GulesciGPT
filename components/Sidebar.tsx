@@ -117,7 +117,7 @@ export function Sidebar({
           </h1>
           <button
             onClick={toggleSidebar}
-            className="lg:hidden transition-colors"
+            className="transition-colors"
             style={{ color: 'var(--text-tertiary)' }}
             onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-action-hover)'}
             onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-tertiary)'}
@@ -323,7 +323,7 @@ export function Sidebar({
         aria-label="Sohbet kenar çubuğu"
         className={cn(
           "sidebar fixed md:relative inset-y-0 left-0 z-50 w-80 transition-transform duration-300",
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {sidebarContent}

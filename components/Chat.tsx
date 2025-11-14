@@ -60,6 +60,10 @@ export function Chat() {
     } else {
       handleNewChat()
     }
+    // Masaüstünde varsayılan olarak sidebar açık
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      setIsSidebarOpen(true)
+    }
   }, [])
 
   // Set --vh CSS variable for mobile 100vh issues (iOS/Android keyboards)
@@ -347,7 +351,7 @@ export function Chat() {
               {/* Hamburger Menu (Mobile) */}
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="md:hidden p-2 rounded-lg flex-shrink-0 transition-colors"
+                className="p-2 rounded-lg flex-shrink-0 transition-colors"
                 style={{
                   background: 'var(--bg-secondary)',
                   color: 'var(--text-primary)'
@@ -401,6 +405,15 @@ export function Chat() {
               disabled={isLoading}
               onStop={handleStopGeneration}
             />
+            <div className="px-3 md:px-4 py-2 text-center">
+              <div className="text-[11px] md:text-xs leading-5" style={{ color: 'var(--text-tertiary)' }}>
+                <p className="m-0">UYARI: Hassas kişisel veya finansal bilgileri paylaşmayın. Yapay zekâ modelleri hata yapabilir; üretilen içerikleri doğrulamadan önemli kararlar almayın.</p>
+                <p className="m-0">Not: Modellerin çoğu sağlayıcı düzeyinde teknik kayıt tutabilir. Hassas veri girmeyin.</p>
+              </div>
+              <p className="mt-2 text-[11px] md:text-xs" style={{ color: '#666' }}>
+                Bu siteyi kullanarak <a href="/kullanim-kosullari" style={{ textDecoration: 'underline', color: 'inherit' }}>Kullanım Koşulları</a> ve <a href="/gizlilik" style={{ textDecoration: 'underline', color: 'inherit' }}>Gizlilik Bildirimini</a> okuduğunuzu ve kabul ettiğinizi onaylamış sayılırsınız.
+              </p>
+            </div>
           </div>
         </main>
       </div>

@@ -1,6 +1,14 @@
+import Link from 'next/link'
+
 export default function Page() {
   return (
     <main className="max-w-3xl mx-auto px-4 py-8" style={{ color: 'var(--text-secondary)' }}>
+      <div className="mb-4">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>
+          <span aria-hidden>←</span>
+          <span>Ana sayfaya dön</span>
+        </Link>
+      </div>
       <h1 className="text-2xl md:text-3xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
         Kullanım Koşulları
       </h1>

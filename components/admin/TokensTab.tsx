@@ -39,6 +39,7 @@ interface TokenStats {
 export function TokensTab() {
   const [tokenStats, setTokenStats] = useState<TokenStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null)
 
   const fetchTokenStats = async () => {
     try {
@@ -50,6 +51,7 @@ export function TokensTab() {
 
       const data = await response.json()
       setTokenStats(data)
+      setLastUpdatedAt(new Date())
     } catch (error: any) {
       toast.error(error.message || 'Veri yüklenemedi')
     } finally {
@@ -59,11 +61,6 @@ export function TokensTab() {
 
   useEffect(() => {
     fetchTokenStats()
-
-    // Her 30 saniyede bir otomatik yenile
-    const interval = setInterval(fetchTokenStats, 30000)
-
-    return () => clearInterval(interval)
   }, [])
 
   if (isLoading || !tokenStats) {
@@ -95,6 +92,18 @@ export function TokensTab() {
 
   return (
     <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="text-xs md:text-sm" style={{ color: 'var(--text-tertiary)' }}>
+          Son güncelleme: {lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleString('tr-TR') : '—'}
+        </div>
+        <button
+          onClick={fetchTokenStats}
+          className="px-3 py-1.5 rounded text-sm"
+          style={{ background: 'var(--color-action)', color: 'var(--text-primary)' }}
+        >
+          Yenile
+        </button>
+      </div>
       {/* Overview Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card>

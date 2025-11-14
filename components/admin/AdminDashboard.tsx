@@ -42,6 +42,7 @@ export function AdminDashboard() {
   const [keys, setKeys] = useState<ApiKey[]>([])
   const [statsData, setStatsData] = useState<StatsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null)
 
   const fetchWithAuth = async (url: string) => {
     const token = localStorage.getItem('jwt');
@@ -83,17 +84,12 @@ export function AdminDashboard() {
     setIsLoading(true)
     await Promise.all([fetchKeys(), fetchStats()])
     setIsLoading(false)
+    setLastUpdatedAt(new Date())
   }
 
   useEffect(() => {
+    // İlk yükleme sadece manuel tetiklemeden bağımsız
     refreshData()
-
-    // Her 15 saniyede bir ana verileri yenile (keys + stats)
-    const interval = setInterval(() => {
-      refreshData()
-    }, 15000)
-
-    return () => clearInterval(interval)
   }, [])
 
   if (isLoading || !statsData) {
@@ -122,9 +118,30 @@ export function AdminDashboard() {
         <h1 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
           HamzaGPT Admin
         </h1>
-        <p className="mt-1 text-sm md:text-base" style={{ color: 'var(--text-tertiary)' }}>
-          Sistem yönetimi
-        </p>
+        <div className="mt-2 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+          <p className="text-sm md:text-base" style={{ color: 'var(--text-tertiary)' }}>
+            Sistem yönetimi
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={refreshData}
+              className="px-3 py-1.5 rounded text-sm"
+              style={{ background: 'var(--color-action)', color: 'var(--text-primary)' }}
+            >
+              Verileri Yenile
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-3 py-1.5 rounded text-sm"
+              style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+            >
+              Sayfayı Yenile
+            </button>
+            <span className="text-xs md:text-sm" style={{ color: 'var(--text-tertiary)' }}>
+              Son güncelleme: {lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleString() : '—'}
+            </span>
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="keys" className="w-full">

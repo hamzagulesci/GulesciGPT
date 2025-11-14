@@ -54,10 +54,14 @@ const ACTION_COLORS: Record<string, string> = {
 export function AuditTab() {
   const [auditData, setAuditData] = useState<AuditData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null)
 
   const fetchAudit = async () => {
     try {
-      const response = await fetch('/api/admin/audit')
+      const token = typeof window !== 'undefined' ? localStorage.getItem('jwt') : null
+      const response = await fetch('/api/admin/audit', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
 
       if (!response.ok) {
         throw new Error('Audit verileri alınamadı')
@@ -65,6 +69,7 @@ export function AuditTab() {
 
       const data = await response.json()
       setAuditData(data)
+      setLastUpdatedAt(new Date())
     } catch (error: any) {
       toast.error(error.message || 'Veri yüklenemedi')
     } finally {
@@ -74,11 +79,6 @@ export function AuditTab() {
 
   useEffect(() => {
     fetchAudit()
-
-    // Her 30 saniyede bir otomatik yenile
-    const interval = setInterval(fetchAudit, 30000)
-
-    return () => clearInterval(interval)
   }, [])
 
   if (isLoading || !auditData) {
@@ -105,6 +105,18 @@ export function AuditTab() {
 
   return (
     <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="text-xs md:text-sm" style={{ color: 'var(--text-tertiary)' }}>
+          Son güncelleme: {lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleString('tr-TR') : '—'}
+        </div>
+        <button
+          onClick={fetchAudit}
+          className="px-3 py-1.5 rounded text-sm"
+          style={{ background: 'var(--color-action)', color: 'var(--text-primary)' }}
+        >
+          Yenile
+        </button>
+      </div>
       {/* Overview Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         <Card>

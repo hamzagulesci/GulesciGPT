@@ -116,10 +116,6 @@ export const MessageInput = memo(function MessageInput({ onSend, disabled, onSto
         )}
       </div>
 
-      <p className="text-xs text-center" style={{ color: 'var(--text-tertiary)' }}>
-        UYARI: Hassas kişisel veya finansal bilgileri paylaşmayın. Yapay zekâ modelleri hata yapabilir; üretilen içerikleri doğrulamadan önemli kararlar almayın.
-      </p>
-
       <p className="text-xs text-center hidden md:block" style={{ color: 'var(--text-muted)' }}>
         Enter: Gönder | Shift+Enter: Yeni satır
       </p>
