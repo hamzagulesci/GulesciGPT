@@ -38,9 +38,7 @@ export default function Page() {
           <li>Modelin verdiği öneriyle finansal, hukuki veya tıbbi işlem yapmayın; profesyonel danışmanlığa başvurun.</li>
         </ul>
 
-        <h3 className="text-lg md:text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>4. Veri talepleri ve iletişim</h3>
-        <p>Gizlilikle ilgili sorularınız veya veri talepleriniz (ör. içerik silme talebi) için: <a href="mailto:support@yourdomain.com" className="underline">support@yourdomain.com</a></p>
-        <p>Sağlayıcı tarafındaki teknik kayıtlar elimizde olmayabilir; bu tip kayıtların silinmesi sağlayıcı prosedürlerine tabidir.</p>
+        
       </section>
 
       <hr className="my-6" style={{ borderColor: 'var(--border-color)' }} />

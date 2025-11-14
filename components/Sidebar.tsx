@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Trash2, Menu, X, Pencil, Check, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Chat, renameChatTitle } from '@/lib/localStorage'
@@ -39,6 +39,7 @@ export function Sidebar({
   const [editingTitle, setEditingTitle] = useState('')
 
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const asideRef = useRef<HTMLElement>(null)
 
   const toggleSidebar = () => {
     if (onToggle) {
@@ -47,6 +48,32 @@ export function Sidebar({
       setInternalIsOpen(!isOpen)
     }
   }
+
+  // Accessibility: Close with ESC when drawer open
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        toggleSidebar()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown as any)
+    return () => window.removeEventListener('keydown', handleKeyDown as any)
+  }, [isOpen])
+
+  // Focus the sidebar and prevent background scroll when open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      asideRef.current?.focus()
+      if (window.innerWidth < 768) {
+        const prev = document.body.style.overflow
+        document.body.style.overflow = 'hidden'
+        return () => {
+          document.body.style.overflow = prev
+        }
+      }
+    }
+  }, [isOpen])
 
   const handleStartEdit = (chat: Chat) => {
     setEditingChatId(chat.chatId)
@@ -281,7 +308,7 @@ export function Sidebar({
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-40"
+          className="md:hidden fixed inset-0 z-40"
           style={{ background: 'rgba(0, 0, 0, 0.8)' }}
           onClick={toggleSidebar}
           aria-label="Menüyü kapat"
@@ -290,9 +317,13 @@ export function Sidebar({
 
       {/* Sidebar */}
       <aside
+        ref={asideRef}
+        tabIndex={-1}
+        role="complementary"
+        aria-label="Sohbet kenar çubuğu"
         className={cn(
-          "fixed lg:relative inset-y-0 left-0 z-50 w-80 transition-transform duration-300",
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          "sidebar fixed md:relative inset-y-0 left-0 z-50 w-80 transition-transform duration-300",
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
         {sidebarContent}

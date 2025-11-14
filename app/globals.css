@@ -87,6 +87,27 @@
   }
 }
 
+/* Prevent horizontal overflow in media */
+img, video, canvas, svg, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Semantic layout helpers */
+.chat-area {
+  width: 100%;
+  min-width: 0;
+}
+.chat-area > * {
+  min-width: 0;
+}
+.messages {
+  min-width: 0;
+}
+.input-bar {
+  position: sticky;
+}
+
 /* Custom scrollbar - Dark Mode */
 ::-webkit-scrollbar {
   width: 8px;

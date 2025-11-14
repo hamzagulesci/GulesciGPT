@@ -62,6 +62,21 @@ export function Chat() {
     }
   }, [])
 
+  // Set --vh CSS variable for mobile 100vh issues (iOS/Android keyboards)
+  useEffect(() => {
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01
+      document.documentElement.style.setProperty('--vh', `${vh}px`)
+    }
+    setVh()
+    window.addEventListener('resize', setVh)
+    window.addEventListener('orientationchange', setVh)
+    return () => {
+      window.removeEventListener('resize', setVh)
+      window.removeEventListener('orientationchange', setVh)
+    }
+  }, [])
+
   const handleNewChat = useCallback(() => {
     const newChat = createNewChat(selectedModel)
     setCurrentChat(newChat)
@@ -304,7 +319,7 @@ export function Chat() {
 
   return (
     <>
-      <div className="flex min-h-screen" style={{ height: '100dvh' }}>
+      <div className="flex min-h-screen" style={{ height: 'calc(var(--vh, 1vh) * 100)' }}>
         <Sidebar
           chats={chats}
           currentChatId={currentChat?.chatId || null}
@@ -318,10 +333,10 @@ export function Chat() {
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 
-        <main className="flex-1 flex flex-col">
+        <main className="chat-area flex-1 min-w-0 w-full flex flex-col">
           {/* Top Bar - Navbar */}
-          <div
-            className="p-3 md:p-4 shadow-sm"
+          <header
+            className="topbar p-3 md:p-4 shadow-sm"
             style={{
               background: 'var(--bg-navbar)',
               borderBottom: '1px solid var(--border-color)',
@@ -332,7 +347,7 @@ export function Chat() {
               {/* Hamburger Menu (Mobile) */}
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg flex-shrink-0 transition-colors"
+                className="md:hidden p-2 rounded-lg flex-shrink-0 transition-colors"
                 style={{
                   background: 'var(--bg-secondary)',
                   color: 'var(--text-primary)'
@@ -370,7 +385,7 @@ export function Chat() {
                 </button>
               </div>
             </div>
-          </div>
+          </header>
 
           {/* Messages */}
           <MessageList
@@ -380,7 +395,7 @@ export function Chat() {
           />
 
           {/* Input */}
-          <div className="max-w-4xl mx-auto w-full sticky bottom-0 z-10">
+          <div className="input-bar max-w-4xl mx-auto w-full sticky z-10" style={{ bottom: 'env(safe-area-inset-bottom, 0)' }}>
             <MessageInput
               onSend={handleSendMessage}
               disabled={isLoading}

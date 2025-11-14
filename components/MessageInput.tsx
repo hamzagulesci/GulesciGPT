@@ -27,6 +27,13 @@ export const MessageInput = memo(function MessageInput({ onSend, disabled, onSto
     }
   }
 
+  const handleFocus = () => {
+    // Klavye açıldığında input görünür kalsın
+    requestAnimationFrame(() => {
+      textareaRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    })
+  }
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -62,6 +69,7 @@ export const MessageInput = memo(function MessageInput({ onSend, disabled, onSto
             handleInput()
           }}
           onKeyDown={handleKeyDown}
+          onFocus={handleFocus}
           placeholder="Mesajınızı yazın..."
           disabled={disabled}
           className="min-h-[50px] md:min-h-[60px] max-h-[120px] resize-none text-base"

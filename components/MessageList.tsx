@@ -77,7 +77,7 @@ export const MessageList = memo(function MessageList({ messages, isLoading, mode
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto p-3 md:p-4 no-scroll-anchoring"
+      className="messages flex-1 overflow-y-auto p-3 md:p-4 no-scroll-anchoring min-w-0"
       style={{
         background: 'var(--bg-primary)',
         overscrollBehaviorY: 'contain',
