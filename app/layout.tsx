@@ -41,7 +41,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <head></head>
+      <head>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3164898310826304"
+             crossOrigin="anonymous"></script>
+      </head>
       <body className={inter.className}>
         {children}
         <Toaster position="top-center" richColors closeButton />
